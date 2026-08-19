@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 
 import Login from './pages/Login.jsx'
+import VerificarEmail from './pages/VerificarEmail.jsx'
 import Home from './pages/Home.jsx'
 import Libros from './pages/Libros.jsx'
 import Prestamos from './pages/Prestamos.jsx'
@@ -169,6 +170,14 @@ function App() {
             element={
               <Suspense fallback={<div className="login-container">Cargando...</div>}>
                 <Login />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/verificar-email"
+            element={
+              <Suspense fallback={<div className="login-container">Cargando...</div>}>
+                <VerificarEmail />
               </Suspense>
             }
           />

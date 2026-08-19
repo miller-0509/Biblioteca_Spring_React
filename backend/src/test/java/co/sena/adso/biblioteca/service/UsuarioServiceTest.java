@@ -68,6 +68,9 @@ class UsuarioServiceTest {
     @Mock
     private HistorialEstadoEquipoRepository historialEquipoRepository;
 
+    @Mock
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private UsuarioService usuarioService;
 
@@ -112,7 +115,7 @@ class UsuarioServiceTest {
     @Test
     void create_shouldSaveAndReturnDTO() {
         UsuarioRequestDTO dto = new UsuarioRequestDTO("nuevo@email.com", "abcdef", "Nuevo", "Usuario", null, null);
-        when(usuarioRepository.existsByCorreo("nuevo@email.com")).thenReturn(false);
+        when(usuarioRepository.existsByCorreoIgnoreCase("nuevo@email.com")).thenReturn(false);
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
         UsuarioResponseDTO result = usuarioService.create(dto);
         assertThat(result).isNotNull();
@@ -122,7 +125,7 @@ class UsuarioServiceTest {
     @Test
     void create_shouldThrowBusinessException_whenCorreoDuplicado() {
         UsuarioRequestDTO dto = new UsuarioRequestDTO("carlos@email.com", "abcdef", "Nuevo", "Usuario", null, null);
-        when(usuarioRepository.existsByCorreo("carlos@email.com")).thenReturn(true);
+        when(usuarioRepository.existsByCorreoIgnoreCase("carlos@email.com")).thenReturn(true);
         assertThatThrownBy(() -> usuarioService.create(dto))
             .isInstanceOf(BusinessException.class)
             .hasMessageContaining("carlos@email.com");
@@ -131,14 +134,14 @@ class UsuarioServiceTest {
 
     @Test
     void findByCorreo_shouldReturnDTO_whenFound() {
-        when(usuarioRepository.findByCorreo("carlos@email.com")).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findByCorreoIgnoreCase("carlos@email.com")).thenReturn(Optional.of(usuario));
         UsuarioResponseDTO result = usuarioService.findByCorreo("carlos@email.com");
         assertThat(result.correo()).isEqualTo("carlos@email.com");
     }
 
     @Test
     void findByCorreo_shouldThrowException_whenNotFound() {
-        when(usuarioRepository.findByCorreo("noexiste@email.com")).thenReturn(Optional.empty());
+        when(usuarioRepository.findByCorreoIgnoreCase("noexiste@email.com")).thenReturn(Optional.empty());
         assertThatThrownBy(() -> usuarioService.findByCorreo("noexiste@email.com"))
             .isInstanceOf(ResourceNotFoundException.class);
     }
@@ -148,7 +151,7 @@ class UsuarioServiceTest {
         UsuarioUpdateDTO dto = new UsuarioUpdateDTO(
             "nuevo@email.com", null, "Carlos", "Rueda", RolUsuario.bibliotecario, EstadoUsuario.activo);
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
-        when(usuarioRepository.existsByCorreo("nuevo@email.com")).thenReturn(false);
+        when(usuarioRepository.existsByCorreoIgnoreCase("nuevo@email.com")).thenReturn(false);
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
         UsuarioResponseDTO result = usuarioService.update(1L, dto);
         assertThat(result.correo()).isEqualTo("nuevo@email.com");
@@ -161,7 +164,7 @@ class UsuarioServiceTest {
         UsuarioUpdateDTO dto = new UsuarioUpdateDTO(
             "otro@email.com", null, "Carlos", "Rueda", RolUsuario.aprendiz, EstadoUsuario.activo);
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
-        when(usuarioRepository.existsByCorreo("otro@email.com")).thenReturn(true);
+        when(usuarioRepository.existsByCorreoIgnoreCase("otro@email.com")).thenReturn(true);
         assertThatThrownBy(() -> usuarioService.update(1L, dto))
             .isInstanceOf(BusinessException.class)
             .hasMessageContaining("otro@email.com");

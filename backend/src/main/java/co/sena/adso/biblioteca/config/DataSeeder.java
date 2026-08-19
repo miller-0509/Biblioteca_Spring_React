@@ -56,6 +56,22 @@ public class DataSeeder {
             Usuario diego = crearOActualizarUsuario("diego@email.com", "Clave1234", "Diego Alejandro", "Ramírez Ortiz", RolUsuario.aprendiz);
             Usuario laura = crearOActualizarUsuario("laura@email.com", "Clave1234", "Laura Sofía", "Valencia Díaz", RolUsuario.aprendiz);
 
+            // Asegurar que cualquier usuario preexistente en base de datos esté verificado y activo
+            usuarioRepository.findAll().forEach(u -> {
+                boolean cambiado = false;
+                if (!Boolean.TRUE.equals(u.getEmailVerificado())) {
+                    u.setEmailVerificado(true);
+                    cambiado = true;
+                }
+                if (u.getEstado() == null) {
+                    u.setEstado(EstadoUsuario.activo);
+                    cambiado = true;
+                }
+                if (cambiado) {
+                    usuarioRepository.save(u);
+                }
+            });
+
             // 2. Libros Ficticios
             Libro l1 = crearLibroSiNoExiste("LIB-001", "Cien años de soledad", "Gabriel García Márquez", "Novela / Realismo Mágico", EstadoLibro.disponible, "Estante A-12", 15, "Obra cumbre de la literatura hispanoamericana.");
             Libro l2 = crearLibroSiNoExiste("LIB-002", "Clean Code: Manual de estilo para desarrollo ágil", "Robert C. Martin", "Ingeniería de Software", EstadoLibro.prestado, "Estante B-04", 10, "Principios y patrones para escribir código limpio y mantenible.");
@@ -97,16 +113,17 @@ public class DataSeeder {
     }
 
     private Usuario crearOActualizarUsuario(String correo, String pass, String nombres, String apellidos, RolUsuario rol) {
-        return usuarioRepository.findByCorreo(correo).map(u -> {
+        return usuarioRepository.findByCorreoIgnoreCase(correo).map(u -> {
             u.setNombres(nombres);
             u.setApellidos(apellidos);
             u.setRol(rol);
             u.setEstado(EstadoUsuario.activo);
             u.setEmailVerificado(true);
+            u.setPassword(passwordEncoder.encode(pass));
             return usuarioRepository.save(u);
         }).orElseGet(() -> {
             Usuario u = new Usuario();
-            u.setCorreo(correo);
+            u.setCorreo(correo.toLowerCase());
             u.setPassword(passwordEncoder.encode(pass));
             u.setNombres(nombres);
             u.setApellidos(apellidos);

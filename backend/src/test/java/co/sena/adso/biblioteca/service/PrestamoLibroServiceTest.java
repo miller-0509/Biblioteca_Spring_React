@@ -37,6 +37,21 @@ class PrestamoLibroServiceTest {
     @Mock
     private LibroRepository libroRepository;
 
+    @Mock
+    private co.sena.adso.biblioteca.repository.RenovacionLibroRepository renovacionRepository;
+
+    @Mock
+    private co.sena.adso.biblioteca.repository.HistorialEstadoLibroRepository historialRepository;
+
+    @Mock
+    private PrestamoRules rules;
+
+    @Mock
+    private MultaService multaService;
+
+    @Mock
+    private EmailService emailService;
+
     @InjectMocks
     private PrestamoLibroService prestamoService;
 

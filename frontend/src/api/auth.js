@@ -2,6 +2,7 @@ import { get, post } from './client'
 
 export const login = (correo, password) => post('/auth/login', { correo, password })
 export const registro = (datos) => post('/auth/registro', datos)
+export const verificarEmail = (token) => get(`/auth/verificar/${token}`)
 export const reenviarVerificacion = (correo) => post('/auth/reenviar-verificacion', { correo })
 export const recuperarPassword = (correo) => post('/auth/recuperar-password', { correo })
 export const restablecerPassword = (token, password, passwordConfirm) =>

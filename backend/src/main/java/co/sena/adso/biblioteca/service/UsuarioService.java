@@ -7,6 +7,7 @@ import co.sena.adso.biblioteca.dto.UsuarioResponseDTO;
 import co.sena.adso.biblioteca.dto.UsuarioUpdateDTO;
 import co.sena.adso.biblioteca.entity.EstadoPrestamo;
 import co.sena.adso.biblioteca.entity.EstadoPrestamoLibro;
+import co.sena.adso.biblioteca.entity.EstadoUsuario;
 import co.sena.adso.biblioteca.entity.Prestamo;
 import co.sena.adso.biblioteca.entity.PrestamoLibro;
 import co.sena.adso.biblioteca.entity.RolUsuario;
@@ -43,6 +44,7 @@ public class UsuarioService {
     private final MultaRepository multaRepository;
     private final HistorialEstadoLibroRepository historialLibroRepository;
     private final HistorialEstadoEquipoRepository historialEquipoRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     public UsuarioService(UsuarioRepository usuarioRepository,
                           PrestamoRepository prestamoRepository,
@@ -51,7 +53,8 @@ public class UsuarioService {
                           RenovacionLibroRepository renovacionLibroRepository,
                           MultaRepository multaRepository,
                           HistorialEstadoLibroRepository historialLibroRepository,
-                          HistorialEstadoEquipoRepository historialEquipoRepository) {
+                          HistorialEstadoEquipoRepository historialEquipoRepository,
+                          @org.springframework.context.annotation.Lazy org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.prestamoRepository = prestamoRepository;
         this.prestamoLibroRepository = prestamoLibroRepository;
@@ -60,6 +63,7 @@ public class UsuarioService {
         this.multaRepository = multaRepository;
         this.historialLibroRepository = historialLibroRepository;
         this.historialEquipoRepository = historialEquipoRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional(readOnly = true)
@@ -78,23 +82,25 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioResponseDTO create(UsuarioRequestDTO dto) {
-        if (usuarioRepository.existsByCorreo(dto.correo())) {
+        String correoLimpio = dto.correo().trim().toLowerCase();
+        if (usuarioRepository.existsByCorreoIgnoreCase(correoLimpio)) {
             throw new BusinessException("El correo " + dto.correo() + " ya está registrado");
         }
         Usuario usuario = new Usuario();
-        usuario.setNombres(dto.nombres());
-        usuario.setApellidos(dto.apellidos());
-        usuario.setCorreo(dto.correo());
-        usuario.setPassword(dto.password());
-        usuario.setRol(dto.rol());
-        usuario.setEstado(dto.estado());
+        usuario.setNombres(dto.nombres().trim());
+        usuario.setApellidos(dto.apellidos().trim());
+        usuario.setCorreo(correoLimpio);
+        usuario.setPassword(passwordEncoder != null ? passwordEncoder.encode(dto.password()) : dto.password());
+        usuario.setRol(dto.rol() != null ? dto.rol() : RolUsuario.aprendiz);
+        usuario.setEstado(dto.estado() != null ? dto.estado() : EstadoUsuario.activo);
+        usuario.setEmailVerificado(true);
         usuario.setFechaRegistro(LocalDateTime.now());
         return UsuarioResponseDTO.fromEntity(usuarioRepository.save(usuario));
     }
 
     @Transactional(readOnly = true)
     public UsuarioResponseDTO findByCorreo(String correo) {
-        Usuario usuario = usuarioRepository.findByCorreo(correo)
+        Usuario usuario = usuarioRepository.findByCorreoIgnoreCase(correo.trim().toLowerCase())
             .orElseThrow(() -> new ResourceNotFoundException("Usuario con correo " + correo, 0L));
         return UsuarioResponseDTO.fromEntity(usuario);
     }
@@ -103,16 +109,17 @@ public class UsuarioService {
     public UsuarioResponseDTO update(@org.springframework.lang.NonNull Long id, UsuarioUpdateDTO dto) {
         Usuario usuario = usuarioRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Usuario", id));
-        if (!usuario.getCorreo().equals(dto.correo()) && usuarioRepository.existsByCorreo(dto.correo())) {
+        String nuevoCorreo = dto.correo().trim().toLowerCase();
+        if (!usuario.getCorreo().equalsIgnoreCase(nuevoCorreo) && usuarioRepository.existsByCorreoIgnoreCase(nuevoCorreo)) {
             throw new BusinessException("El correo " + dto.correo() + " ya está registrado");
         }
-        usuario.setNombres(dto.nombres());
-        usuario.setApellidos(dto.apellidos());
-        usuario.setCorreo(dto.correo());
-        usuario.setRol(dto.rol());
-        usuario.setEstado(dto.estado());
+        usuario.setNombres(dto.nombres().trim());
+        usuario.setApellidos(dto.apellidos().trim());
+        usuario.setCorreo(nuevoCorreo);
+        if (dto.rol() != null) usuario.setRol(dto.rol());
+        if (dto.estado() != null) usuario.setEstado(dto.estado());
         if (dto.password() != null && !dto.password().isBlank()) {
-            usuario.setPassword(dto.password());
+            usuario.setPassword(passwordEncoder != null ? passwordEncoder.encode(dto.password()) : dto.password());
         }
         return UsuarioResponseDTO.fromEntity(usuarioRepository.save(usuario));
     }

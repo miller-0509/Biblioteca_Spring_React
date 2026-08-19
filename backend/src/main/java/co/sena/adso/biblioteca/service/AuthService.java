@@ -46,7 +46,7 @@ public class AuthService {
     @Transactional
     public AuthResponseDTO login(LoginRequestDTO dto) {
         String correo = dto.correo().trim().toLowerCase();
-        Usuario usuario = usuarioRepository.findByCorreo(correo)
+        Usuario usuario = usuarioRepository.findByCorreoIgnoreCase(correo)
             .orElseThrow(() -> new BusinessException("Credenciales inválidas o cuenta no autorizada."));
 
         if (!verificarPassword(dto.password(), usuario)) {
@@ -55,10 +55,9 @@ public class AuthService {
         if (usuario.getEstado() != EstadoUsuario.activo) {
             throw new BusinessException("Cuenta inactiva o bloqueada. Contacta al administrador.");
         }
-        boolean esStaff = esStaff(usuario.getRol());
-        if (Boolean.FALSE.equals(usuario.getEmailVerificado()) && !esStaff) {
+        if (!Boolean.TRUE.equals(usuario.getEmailVerificado())) {
             throw new BusinessException(
-                "Debes verificar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada o solicita un nuevo enlace.");
+                "Debes verificar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada o solicita un nuevo enlace de verificación.");
         }
 
         String token = jwtService.generateToken(usuario.getCorreo());
@@ -76,7 +75,7 @@ public class AuthService {
         if (!EMAIL_PATTERN.matcher(correo).matches()) {
             throw new BusinessException("El formato del correo electrónico no es válido.");
         }
-        if (usuarioRepository.existsByCorreo(correo)) {
+        if (usuarioRepository.existsByCorreoIgnoreCase(correo)) {
             throw new BusinessException("El correo ya está registrado.");
         }
 
@@ -100,7 +99,7 @@ public class AuthService {
     @Transactional
     public MensajeDTO verificarEmail(String token) {
         String correo = tokenService.consumirToken(token, TipoToken.verificacion_email);
-        Usuario usuario = usuarioRepository.findByCorreo(correo)
+        Usuario usuario = usuarioRepository.findByCorreoIgnoreCase(correo)
             .orElseThrow(() -> new BusinessException("No se encontró una cuenta asociada a este enlace."));
         if (Boolean.TRUE.equals(usuario.getEmailVerificado())) {
             return new MensajeDTO("Tu correo electrónico ya fue verificado anteriormente. Puedes iniciar sesión.");
@@ -114,7 +113,7 @@ public class AuthService {
     @Transactional
     public MensajeDTO reenviarVerificacion(RecuperarPasswordRequestDTO dto) {
         String correo = dto.correo().trim().toLowerCase();
-        usuarioRepository.findByCorreo(correo).ifPresent(usuario -> {
+        usuarioRepository.findByCorreoIgnoreCase(correo).ifPresent(usuario -> {
             if (Boolean.FALSE.equals(usuario.getEmailVerificado())) {
                 String token = tokenService.generarToken(correo, TipoToken.verificacion_email);
                 emailService.enviarCorreoVerificacion(usuario.getNombres(), correo, token);
@@ -126,7 +125,7 @@ public class AuthService {
     @Transactional
     public MensajeDTO recuperarPassword(RecuperarPasswordRequestDTO dto) {
         String correo = dto.correo().trim().toLowerCase();
-        usuarioRepository.findByCorreo(correo).ifPresent(usuario -> {
+        usuarioRepository.findByCorreoIgnoreCase(correo).ifPresent(usuario -> {
             if (usuario.getEstado() == EstadoUsuario.activo) {
                 String token = tokenService.generarToken(correo, TipoToken.recuperar_password);
                 emailService.enviarCorreoRecuperacion(usuario.getNombres(), correo, token);
@@ -142,7 +141,7 @@ public class AuthService {
             throw new BusinessException("Las contraseñas no coinciden.");
         }
         validarPassword(dto.password());
-        Usuario usuario = usuarioRepository.findByCorreo(correo)
+        Usuario usuario = usuarioRepository.findByCorreoIgnoreCase(correo)
             .orElseThrow(() -> new BusinessException("No se encontró una cuenta asociada a este enlace."));
         usuario.setPassword(passwordEncoder.encode(dto.password()));
         usuarioRepository.save(usuario);
