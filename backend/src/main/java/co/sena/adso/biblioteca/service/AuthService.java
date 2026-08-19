@@ -157,7 +157,10 @@ public class AuthService {
 
     private boolean verificarPassword(String passwordPlano, Usuario usuario) {
         String almacenada = usuario.getPassword();
-        if (almacenada != null && almacenada.startsWith("$2")) {
+        if (almacenada == null) {
+            return false;
+        }
+        if (almacenada.startsWith("$2") || almacenada.startsWith("scrypt:")) {
             return passwordEncoder.matches(passwordPlano, almacenada);
         }
         // Contraseña legacy sin hash (migración): comparación directa y upgrade automático.
