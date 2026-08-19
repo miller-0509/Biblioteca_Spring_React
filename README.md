@@ -2,7 +2,7 @@
 
 API REST de **gestión de biblioteca/almacén** (SENA ADSO): libros, equipos, usuarios, préstamos de libros y equipos, renovaciones, multas/suspensiones, historial de estados, reportes con exportación Excel y autenticación JWT con verificación de email. Incluye un frontend React.
 
-> Nota: el proyecto se llama **Biblioteca_Spring_React**. Antes conservaba el nombre histórico `fincas-api` (carpeta, artifactId y paquete `co.sena.adso.fincasapi`), ya renombrado. La base de datos de desarrollo en Coolify es `master_db`. Se replica el sistema Flask de referencia (`Proyecto_gestion_biblioteca`).
+> Nota: la base de datos de desarrollo en Coolify es `master_db`. Se replica el sistema Flask de referencia (`Proyecto_gestion_biblioteca`).
 
 Repositorio: <https://github.com/miller-0509/Biblioteca_Spring_React>
 
