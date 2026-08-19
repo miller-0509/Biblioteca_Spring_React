@@ -16,5 +16,6 @@ COPY nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
 
 ENV BACKEND_URL=http://localhost:8080
+ENV NGINX_ENVSUBST_FILTER=BACKEND_URL
 
 EXPOSE 80
