@@ -1,0 +1,6 @@
+target/
+.env
+*.log
+dev.log
+backend.log
+requests.http
