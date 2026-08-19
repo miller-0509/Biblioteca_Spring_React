@@ -1,0 +1,577 @@
+### ═══════════════════════════════════════════════════════════
+### BIBLIOTECA API — Endpoints de ejemplo
+### ═══════════════════════════════════════════════════════════
+### REQUISITOS: PostgreSQL corriendo en localhost:5434 y la API en localhost:31026
+### EJECUTAR: .\mvnw spring-boot:run
+### SWAGGER:  http://localhost:31026/swagger-ui.html
+### ═══════════════════════════════════════════════════════════
+@host = http://localhost:31026
+
+### ═══════════════════════════════════════
+### 0. AUTH — autenticación JWT
+### ═══════════════════════════════════════
+
+### 0.5a. POST /api/auth/login — Login admin (seed) → devuelve token
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "correo": "admin@email.com",
+  "password": "Admin1234"
+}
+
+### 0.5b. POST /api/auth/login — Login bibliotecario (seed)
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "correo": "carlos@email.com",
+  "password": "123456"
+}
+
+### 0.5c. POST /api/auth/login — Login aprendiz (seed)
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "correo": "maria@email.com",
+  "password": "654321"
+}
+
+### 0.5d. POST /api/auth/registro — Registro (rol aprendiz, genera token de verificación en consola)
+POST {{host}}/api/auth/registro
+Content-Type: application/json
+
+{
+  "nombres": "Luis",
+  "apellidos": "Pérez",
+  "correo": "luis@email.com",
+  "password": "Password123"
+}
+
+### 0.5e. GET /api/auth/verificar/{token} — Verificar email (token impreso en consola)
+# GET {{host}}/api/auth/verificar/TOKEN
+
+### 0.5f. POST /api/auth/reenviar-verificacion
+POST {{host}}/api/auth/reenviar-verificacion
+Content-Type: application/json
+
+{
+  "correo": "luis@email.com"
+}
+
+### 0.5g. POST /api/auth/recuperar-password
+POST {{host}}/api/auth/recuperar-password
+Content-Type: application/json
+
+{
+  "correo": "maria@email.com"
+}
+
+### 0.5h. POST /api/auth/restablecer-password/{token}
+POST {{host}}/api/auth/restablecer-password/TOKEN
+Content-Type: application/json
+
+{
+  "password": "NuevaPass123",
+  "passwordConfirm": "NuevaPass123"
+}
+
+### 0.5i. GET /api/auth/me — Datos del usuario autenticado (usa el token del login)
+# GET {{host}}/api/auth/me
+# Authorization: Bearer <token>
+
+
+### ═══════════════════════════════════════
+### 1. USUARIOS
+### ═══════════════════════════════════════
+
+### 1a. POST /api/usuarios — Crear usuario (rol: administrador/aprendiz/instructor/bibliotecario/almacenista)
+POST {{host}}/api/usuarios
+Content-Type: application/json
+
+{
+  "correo": "carlos@email.com",
+  "password": "123456",
+  "nombres": "Carlos",
+  "apellidos": "Rueda",
+  "rol": "bibliotecario",
+  "estado": "activo"
+}
+
+### 1b. POST /api/usuarios — Crear segundo usuario
+POST {{host}}/api/usuarios
+Content-Type: application/json
+
+{
+  "correo": "maria@email.com",
+  "password": "654321",
+  "nombres": "María",
+  "apellidos": "Gómez",
+  "rol": "aprendiz",
+  "estado": "activo"
+}
+
+### 1c. GET /api/usuarios — Listar usuarios
+GET {{host}}/api/usuarios
+
+### 1d. GET /api/usuarios/1 — Obtener usuario por ID
+GET {{host}}/api/usuarios/1
+
+### 1e. GET /api/usuarios/correo/carlos@email.com — Buscar por correo
+GET {{host}}/api/usuarios/correo/carlos@email.com
+
+### ═══════════════════════════════════════
+### 2. LIBROS
+### ═══════════════════════════════════════
+
+### 2a. POST /api/libros — Crear libro
+POST {{host}}/api/libros
+Content-Type: application/json
+
+{
+  "titulo": "Cien años de soledad",
+  "autor": "Gabriel García Márquez",
+  "genero": "Novela",
+  "codigoUnico": "LIB-001",
+  "estado": "disponible",
+  "ubicacion": "Estante A1",
+  "tiempoMaxPrestamo": 15,
+  "descripcion": "Edición conmemorativa",
+  "fechaCompra": "2025-01-15",
+  "proveedor": "Editorial Norma",
+  "responsable": "Biblioteca Central"
+}
+
+### 2b. POST /api/libros — Crear segundo libro
+POST {{host}}/api/libros
+Content-Type: application/json
+
+{
+  "titulo": "Clean Code",
+  "autor": "Robert C. Martin",
+  "genero": "Técnico",
+  "codigoUnico": "LIB-002",
+  "estado": "disponible",
+  "tiempoMaxPrestamo": 10
+}
+
+### 2c. GET /api/libros — Listar libros (no eliminados)
+GET {{host}}/api/libros
+
+### 2d. GET /api/libros/1 — Obtener libro por ID
+GET {{host}}/api/libros/1
+
+### 2e. PUT /api/libros/1 — Actualizar libro
+PUT {{host}}/api/libros/1
+Content-Type: application/json
+
+{
+  "titulo": "Cien años de soledad (2.ª ed.)",
+  "autor": "Gabriel García Márquez",
+  "genero": "Novela",
+  "codigoUnico": "LIB-001",
+  "estado": "disponible",
+  "ubicacion": "Estante A2",
+  "tiempoMaxPrestamo": 15
+}
+
+### 2f. PUT /api/libros/1/estado — Cambiar estado (disponible/prestado/mantenimiento/dañado)
+PUT {{host}}/api/libros/1/estado
+Content-Type: application/json
+
+"prestado"
+
+### 2g. DELETE /api/libros/2 — Eliminar (borrado lógico)
+DELETE {{host}}/api/libros/2
+
+### ═══════════════════════════════════════
+### 3. EQUIPOS
+### ═══════════════════════════════════════
+
+### 3a. POST /api/equipos — Crear equipo
+POST {{host}}/api/equipos
+Content-Type: application/json
+
+{
+  "nombre": "Portátil HP ProBook",
+  "tipoEquipo": "Computador",
+  "marca": "HP",
+  "modelo": "ProBook 450",
+  "numeroSerie": "SN-HP-001",
+  "estado": "disponible",
+  "ubicacion": "Sala de sistemas",
+  "disponiblePrestamo": true,
+  "tiempoMaxPrestamo": 7,
+  "fechaCompra": "2025-03-10",
+  "proveedor": "TecnoSENA",
+  "responsable": "Almacén"
+}
+
+### 3b. POST /api/equipos — Crear segundo equipo
+POST {{host}}/api/equipos
+Content-Type: application/json
+
+{
+  "nombre": "Proyector Epson",
+  "tipoEquipo": "Audiovisual",
+  "marca": "Epson",
+  "modelo": "EB-X51",
+  "numeroSerie": "SN-EPS-002",
+  "estado": "mantenimiento",
+  "ubicacion": "Sala 3"
+}
+
+### 3c. GET /api/equipos — Listar equipos
+GET {{host}}/api/equipos
+
+### 3d. GET /api/equipos/disponibles — Solo disponibles
+GET {{host}}/api/equipos/disponibles
+
+### 3e. GET /api/equipos/1 — Obtener equipo por ID
+GET {{host}}/api/equipos/1
+
+### 3f. PUT /api/equipos/1 — Actualizar equipo
+PUT {{host}}/api/equipos/1
+Content-Type: application/json
+
+{
+  "nombre": "Portátil HP ProBook 450 G8",
+  "tipoEquipo": "Computador",
+  "marca": "HP",
+  "modelo": "ProBook 450 G8",
+  "numeroSerie": "SN-HP-001",
+  "estado": "disponible",
+  "ubicacion": "Sala de sistemas 2"
+}
+
+### 3g. PUT /api/equipos/1/estado — Cambiar estado
+PUT {{host}}/api/equipos/1/estado
+Content-Type: application/json
+
+"prestado"
+
+### 3h. DELETE /api/equipos/2 — Eliminar (borrado lógico)
+DELETE {{host}}/api/equipos/2
+
+### ═══════════════════════════════════════
+### 4. PRÉSTAMOS DE LIBROS
+### ═══════════════════════════════════════
+
+### 4a. POST /api/prestamos-libros — Crear préstamo (estado: pendiente/aceptado/rechazado/devuelto)
+POST {{host}}/api/prestamos-libros
+Content-Type: application/json
+
+{
+  "usuarioId": 2,
+  "libroId": 1,
+  "administradorId": 1,
+  "estado": "pendiente",
+  "observaciones": "Solicitud de préstamo de 15 días"
+}
+
+### 4b. GET /api/prestamos-libros — Listar préstamos
+GET {{host}}/api/prestamos-libros
+
+### 4c. GET /api/prestamos-libros/usuario/2 — Préstamos de un usuario
+GET {{host}}/api/prestamos-libros/usuario/2
+
+### 4d. GET /api/prestamos-libros/libro/1 — Préstamos de un libro
+GET {{host}}/api/prestamos-libros/libro/1
+
+### 4e. PUT /api/prestamos-libros/1/estado — Aprobar (registra fecha de aprobación)
+PUT {{host}}/api/prestamos-libros/1/estado
+Content-Type: application/json
+
+"aceptado"
+
+### 4f. PUT /api/prestamos-libros/1/estado — Marcar devuelto (registra fecha real)
+PUT {{host}}/api/prestamos-libros/1/estado
+Content-Type: application/json
+
+"devuelto"
+
+### 4g. PUT /api/prestamos-libros/1 — Actualizar préstamo
+PUT {{host}}/api/prestamos-libros/1
+Content-Type: application/json
+
+{
+  "usuarioId": 2,
+  "libroId": 1,
+  "administradorId": 1,
+  "estado": "devuelto",
+  "observacionDevolucion": "En buen estado",
+  "estadoFisicoDevolucion": "bueno"
+}
+
+### 4h. DELETE /api/prestamos-libros/1 — Eliminar préstamo
+DELETE {{host}}/api/prestamos-libros/1
+
+### ═══════════════════════════════════════
+### 5. RENOVACIONES DE LIBROS
+### ═══════════════════════════════════════
+
+### 5a. POST /api/renovaciones-libros — Solicitar renovación
+POST {{host}}/api/renovaciones-libros
+Content-Type: application/json
+
+{
+  "prestamoLibroId": 1,
+  "usuarioId": 2,
+  "administradorId": 1,
+  "fechaEsperadaOriginal": "2026-03-30T18:00:00",
+  "fechaEsperadaNueva": "2026-04-14T18:00:00",
+  "estado": "pendiente",
+  "motivoSolicitud": "Necesito más tiempo para terminar la lectura"
+}
+
+### 5b. GET /api/renovaciones-libros — Listar renovaciones
+GET {{host}}/api/renovaciones-libros
+
+### 5c. GET /api/renovaciones-libros/prestamo/1 — Renovaciones de un préstamo
+GET {{host}}/api/renovaciones-libros/prestamo/1
+
+### 5d. PUT /api/renovaciones-libros/1/estado — Aprobar/rechazar renovación
+PUT {{host}}/api/renovaciones-libros/1/estado
+Content-Type: application/json
+
+"aprobada"
+
+### ═══════════════════════════════════════
+### 6. HISTORIAL DE ESTADOS (auditoría)
+### ═══════════════════════════════════════
+
+### 6a. POST /api/historial-estado-libros — Registrar cambio de estado de un libro
+POST {{host}}/api/historial-estado-libros
+Content-Type: application/json
+
+{
+  "libroId": 1,
+  "estadoAnterior": "disponible",
+  "estadoNuevo": "prestado",
+  "observacion": "Prestado al aprendiz María Gómez",
+  "administradorId": 1
+}
+
+### 6b. GET /api/historial-estado-libros — Listar historial de libros
+GET {{host}}/api/historial-estado-libros
+
+### 6c. GET /api/historial-estado-libros/libro/1 — Historial de un libro
+GET {{host}}/api/historial-estado-libros/libro/1
+
+### 6d. POST /api/historial-estado-equipos — Registrar cambio de estado de un equipo
+POST {{host}}/api/historial-estado-equipos
+Content-Type: application/json
+
+{
+  "equipoId": 1,
+  "estadoAnterior": "disponible",
+  "estadoNuevo": "prestado",
+  "observacion": "Entregado en préstamo",
+  "administradorId": 1
+}
+
+### 6e. GET /api/historial-estado-equipos — Listar historial de equipos
+GET {{host}}/api/historial-estado-equipos
+
+### 6f. GET /api/historial-estado-equipos/equipo/1 — Historial de un equipo
+GET {{host}}/api/historial-estado-equipos/equipo/1
+
+### ═══════════════════════════════════════
+### 7. VALIDACIONES Y EXCEPCIONES
+### ═══════════════════════════════════════
+
+### 7a. 400 — Libro sin campos obligatorios
+POST {{host}}/api/libros
+Content-Type: application/json
+
+{
+  "autor": "Test"
+}
+
+### 7b. 400 — Usuario sin campos obligatorios
+POST {{host}}/api/usuarios
+Content-Type: application/json
+
+{
+  "correo": "no-es-correo"
+}
+
+### 7c. 404 — Libro inexistente
+GET {{host}}/api/libros/999
+
+### 7d. 422 — Código único duplicado (regla de negocio)
+POST {{host}}/api/libros
+Content-Type: application/json
+
+{
+  "titulo": "Otro libro",
+  "autor": "Autor",
+  "genero": "Drama",
+  "codigoUnico": "LIB-001"
+}
+
+### ═══════════════════════════════════════
+### 8. MISCELÁNEO (Administrativos)
+### ═══════════════════════════════════════
+
+### 8a. Swagger UI (abrir en navegador)
+# GET {{host}}/swagger-ui.html
+
+### 8b. OpenAPI JSON
+# GET {{host}}/v3/api-docs
+
+### 8c. Health
+# GET {{host}}/actuator/health
+
+### ═══════════════════════════════════════
+### 9. PRÉSTAMOS DE EQUIPOS (flujo completo)
+### ═══════════════════════════════════════
+
+### 9a. POST /api/prestamos — Solicitar préstamo de equipo (usuario autenticado o admin/almacenista)
+POST {{host}}/api/prestamos
+Content-Type: application/json
+# Authorization: Bearer <token>
+
+{
+  "usuarioId": 3,
+  "equipoId": 1,
+  "diasPrestamo": 7,
+  "observaciones": "Solicitud de préstamo de equipo"
+}
+
+### 9b. GET /api/prestamos — Listar préstamos de equipos
+GET {{host}}/api/prestamos
+
+### 9c. GET /api/prestamos/usuario/3 — Préstamos de un usuario
+GET {{host}}/api/prestamos/usuario/3
+
+### 9d. GET /api/prestamos/equipo/1 — Préstamos de un equipo
+GET {{host}}/api/prestamos/equipo/1
+
+### 9e. PUT /api/prestamos/1/aceptar — Aprobar solicitud
+PUT {{host}}/api/prestamos/1/aceptar
+
+### 9f. PUT /api/prestamos/1/rechazar — Rechazar con razón
+PUT {{host}}/api/prestamos/1/rechazar
+Content-Type: application/json
+
+{
+  "razon": "Equipo reservado para otra actividad"
+}
+
+### 9g. PUT /api/prestamos/1/devolver — Registrar devolución (multa automática si hay retraso)
+PUT {{host}}/api/prestamos/1/devolver
+Content-Type: application/json
+
+{
+  "estadoFisico": "bueno",
+  "estadoFinal": "disponible",
+  "observacionDevolucion": "Devolución en buen estado"
+}
+
+### 9h. PUT /api/prestamos/1/renovar — Solicitar renovación
+PUT {{host}}/api/prestamos/1/renovar
+Content-Type: application/json
+
+{
+  "motivoRenovacion": "Necesito más tiempo para la práctica"
+}
+
+### 9i. PUT /api/prestamos/1/procesar-renovacion — Aprobar/rechazar renovación
+PUT {{host}}/api/prestamos/1/procesar-renovacion
+Content-Type: application/json
+
+{
+  "accion": "aprobar"
+}
+
+### 9j. GET /api/renovaciones-equipos — Historial de renovaciones de equipos
+GET {{host}}/api/renovaciones-equipos
+
+### 9k. GET /api/renovaciones-equipos/prestamo/1 — Renovaciones de un préstamo de equipo
+GET {{host}}/api/renovaciones-equipos/prestamo/1
+
+### ═══════════════════════════════════════
+### 10. MULTAS / SUSPENSIONES
+### ═══════════════════════════════════════
+
+### 10a. GET /api/multas — Listar multas según el rol
+GET {{host}}/api/multas
+
+### 10b. GET /api/multas?estado=activa — Filtrar por estado
+GET {{host}}/api/multas?estado=activa
+
+### 10c. POST /api/multas/1/condonar — Condonar sanción con observación
+POST {{host}}/api/multas/1/condonar
+Content-Type: application/json
+
+{
+  "observacion": "Devolución tardía justificada por la instructora"
+}
+
+### ═══════════════════════════════════════
+### 11. REPORTES
+### ═══════════════════════════════════════
+
+### 11a. GET /api/reportes/dashboard — Estadísticas según el rol
+GET {{host}}/api/reportes/dashboard
+
+### 11b. GET /api/reportes/inventario — Inventario de equipos y libros
+GET {{host}}/api/reportes/inventario
+
+### 11c. GET /api/reportes/inventario?estado=disponible — Filtrado por estado
+GET {{host}}/api/reportes/inventario?estado=disponible
+
+### 11d. GET /api/reportes/prestamos — Reporte de préstamos
+GET {{host}}/api/reportes/prestamos
+
+### 11e. GET /api/reportes/prestamos?tipoRecurso=libros — Solo libros
+GET {{host}}/api/reportes/prestamos?tipoRecurso=libros
+
+### 11f. GET /api/reportes/mis-prestamos — Historial del usuario autenticado
+GET {{host}}/api/reportes/mis-prestamos
+
+### 11g. GET /api/reportes/usuarios-activos — Usuarios activos (solo admin)
+GET {{host}}/api/reportes/usuarios-activos
+
+### 11h. Exportar Excel — descarga .xlsx
+# GET {{host}}/api/reportes/exportar/excel/inventario_equipos
+# GET {{host}}/api/reportes/exportar/excel/inventario_libros
+# GET {{host}}/api/reportes/exportar/excel/prestamos_equipos
+# GET {{host}}/api/reportes/exportar/excel/prestamos_libros
+# GET {{host}}/api/reportes/exportar/excel/mis_prestamos
+
+### ═══════════════════════════════════════
+### 12. PRÉSTAMOS DE LIBROS (flujos de negocio)
+### ═══════════════════════════════════════
+
+### 12a. PUT /api/prestamos-libros/1/aceptar — Aprobar solicitud de préstamo de libro
+PUT {{host}}/api/prestamos-libros/1/aceptar
+
+### 12b. PUT /api/prestamos-libros/1/devolver — Devolución con estado físico y final
+PUT {{host}}/api/prestamos-libros/1/devolver
+Content-Type: application/json
+
+{
+  "estadoFisico": "bueno",
+  "estadoFinal": "disponible",
+  "observacionDevolucion": "Libro devuelto sin daños"
+}
+
+### 12c. PUT /api/prestamos-libros/1/renovar — Solicitar renovación de préstamo de libro
+PUT {{host}}/api/prestamos-libros/1/renovar
+Content-Type: application/json
+
+{
+  "motivoRenovacion": "Necesito más tiempo para la lectura"
+}
+
+### 12d. PUT /api/prestamos-libros/1/procesar-renovacion — Aprobar/rechazar renovación
+PUT {{host}}/api/prestamos-libros/1/procesar-renovacion
+Content-Type: application/json
+
+{
+  "accion": "aprobar"
+}
+
