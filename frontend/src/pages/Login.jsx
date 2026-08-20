@@ -8,7 +8,6 @@ import {
   Lock,
   ArrowRight,
   ShieldCheck,
-  Sparkles,
   User,
   Send,
   CheckCircle2,
@@ -16,14 +15,6 @@ import {
   ArrowLeft,
   Info
 } from 'lucide-react'
-
-const ROLES_DEMO = [
-  { rol: 'Administrador', correo: 'admin@email.com', pass: 'Admin1234', color: '#4f46e5' },
-  { rol: 'Bibliotecario', correo: 'carlos@email.com', pass: '123456', color: '#06b6d4' },
-  { rol: 'Almacenista', correo: 'almacen@email.com', pass: 'Clave1234', color: '#8b5cf6' },
-  { rol: 'Aprendiz', correo: 'maria@email.com', pass: '654321', color: '#10b981' },
-  { rol: 'Instructor', correo: 'pedro@email.com', pass: 'Clave1234', color: '#f59e0b' }
-]
 
 const ROLES_VALIDOS = ['administrador', 'bibliotecario', 'almacenista', 'aprendiz', 'instructor']
 
@@ -35,8 +26,8 @@ function Login() {
   const [modo, setModo] = useState('login')
 
   // Estados de formularios
-  const [correo, setCorreo] = useState('admin@email.com')
-  const [password, setPassword] = useState('Admin1234')
+  const [correo, setCorreo] = useState('')
+  const [password, setPassword] = useState('')
   const [nombres, setNombres] = useState('')
   const [apellidos, setApellidos] = useState('')
 
@@ -129,13 +120,6 @@ function Login() {
     } finally {
       setCargando(false)
     }
-  }
-
-  const selectDemo = (demo) => {
-    setModo('login')
-    setCorreo(demo.correo)
-    setPassword(demo.pass)
-    setMessage({ type: 'success', text: `Usuario de prueba seleccionado: ${demo.rol}`, requiereVerificacion: false })
   }
 
   return (
@@ -517,29 +501,6 @@ function Login() {
               <span>Volver a Iniciar Sesión</span>
             </button>
           </form>
-        )}
-
-        {/* Cuentas de Demostración */}
-        {modo === 'login' && (
-          <div className="demo-roles-container">
-            <div className="demo-roles-title">
-              <Sparkles size={13} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle', color: '#6366f1' }} />
-              Acceso Rápido de Prueba (1-Clic)
-            </div>
-            <div className="demo-roles-grid">
-              {ROLES_DEMO.map((demo) => (
-                <button
-                  key={demo.rol}
-                  type="button"
-                  className="demo-role-btn"
-                  onClick={() => selectDemo(demo)}
-                >
-                  <span>{demo.rol}</span>
-                  <ShieldCheck size={13} style={{ color: demo.color }} />
-                </button>
-              ))}
-            </div>
-          </div>
         )}
       </div>
     </div>
