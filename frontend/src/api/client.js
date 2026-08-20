@@ -5,10 +5,20 @@ export const API_BASE = (import.meta.env.VITE_API_URL || '/api').replace(/\/+$/,
 
 const TOKEN_KEY = 'biblioteca_token'
 
-export const getToken = () => localStorage.getItem(TOKEN_KEY)
-export const setToken = (token) => localStorage.setItem(TOKEN_KEY, token)
-export const clearToken = () => {
+// Limpiar residuo antiguo de localStorage para asegurar que la sesión dependa de la pestaña actual
+try {
   localStorage.removeItem(TOKEN_KEY)
+} catch {
+  // Ignorar si el almacenamiento está restringido
+}
+
+export const getToken = () => sessionStorage.getItem(TOKEN_KEY)
+export const setToken = (token) => sessionStorage.setItem(TOKEN_KEY, token)
+export const clearToken = () => {
+  sessionStorage.removeItem(TOKEN_KEY)
+  try {
+    localStorage.removeItem(TOKEN_KEY)
+  } catch {}
   clearApiCache()
 }
 

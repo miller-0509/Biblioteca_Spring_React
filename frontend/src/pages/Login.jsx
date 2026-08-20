@@ -221,7 +221,7 @@ function Login() {
 
         {/* ── MODO 1: LOGIN ── */}
         {modo === 'login' && (
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <form onSubmit={handleLogin} autoComplete="off" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <label>
               <span>Correo institucional / usuario</span>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -232,6 +232,7 @@ function Login() {
                   value={correo}
                   onChange={(e) => setCorreo(e.target.value)}
                   placeholder="ejemplo@email.com"
+                  autoComplete="off"
                   required
                 />
               </div>
@@ -264,6 +265,7 @@ function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
+                  autoComplete="new-password"
                   required
                 />
               </div>
