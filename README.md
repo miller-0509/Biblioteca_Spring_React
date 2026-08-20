@@ -6,6 +6,17 @@ API REST de **gestión de biblioteca/almacén** (SENA ADSO): libros, equipos, us
 
 Repositorio: <https://github.com/miller-0509/Biblioteca_Spring_React>
 
+## 🚀 Despliegue en producción
+
+El proyecto está desplegado en **Coolify** (servidor `144.91.74.225`), con base de datos PostgreSQL compartida `master_db` y despliegue automático desde la rama `main`.
+
+- 🌐 **Frontend (React):** <https://biblioteca.spring.softlane.click>
+- 🔌 **Backend (API):** <https://api.biblioteca.spring.softlane.click>
+- 📚 **Swagger UI (docs de la API):** <https://api.biblioteca.spring.softlane.click/swagger-ui.html>
+- 💚 **Healthcheck:** <https://api.biblioteca.spring.softlane.click/actuator/health>
+
+Credenciales de prueba (semilla/seed): `admin@email.com` / `Admin1234` (administrador).
+
 ## Requisitos
 
 - JDK 21 o superior.
