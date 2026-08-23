@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './auth/AuthContext.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
@@ -13,7 +13,9 @@ import {
   LogOut,
   Library,
   LayoutDashboard,
-  ShieldCheck
+  ShieldCheck,
+  Menu,
+  X
 } from 'lucide-react'
 
 import Login from './pages/Login.jsx'
@@ -28,8 +30,6 @@ import Multas from './pages/Multas.jsx'
 import Reportes from './pages/Reportes.jsx'
 
 const ADMIN = 'administrador'
-const BIBLIOTECARIO = 'bibliotecario'
-const ALMACENISTA = 'almacenista'
 
 const TITULOS_RUTAS = {
   '/': 'Panel de Control',
@@ -45,6 +45,12 @@ const TITULOS_RUTAS = {
 function Layout() {
   const { user, logout } = useAuth()
   const location = useLocation()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    setSidebarOpen(false)
+  }, [location.pathname])
 
   const puedeUsuarios = user?.rol === ADMIN
 
@@ -64,7 +70,17 @@ function Layout() {
 
   return (
     <div className="app-layout">
-      <aside className="app-sidebar">
+      {/* Mobile Backdrop */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar Navigation */}
+      <aside className={`app-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <div className="sidebar-brand-icon">
             <Library size={22} />
@@ -73,10 +89,17 @@ function Layout() {
             <h1>Biblioteca</h1>
             <p>SENA ADSO</p>
           </div>
+          <button
+            className="mobile-menu-btn"
+            style={{ marginLeft: 'auto', color: '#94a3b8' }}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X size={18} />
+          </button>
         </div>
 
         <div className="sidebar-nav-container">
-          <span className="sidebar-section-title">Navegación</span>
+          <span className="sidebar-section-title">Navegación Principal</span>
           {nav.map((n) => {
             const Icon = n.icon
             return (
@@ -108,19 +131,30 @@ function Layout() {
         </div>
       </aside>
 
+      {/* Main Content Area */}
       <div className="app-main">
         <header className="app-topbar">
           <div className="topbar-left">
-            <h2 className="page-title">{currentTitle}</h2>
+            <button
+              className="mobile-menu-btn"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              title="Abrir menú"
+            >
+              <Menu size={20} />
+            </button>
+            <div>
+              <h2 className="page-title">{currentTitle}</h2>
+            </div>
             <span className="page-badge-role">
-              <ShieldCheck size={13} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
+              <ShieldCheck size={13} />
               {user?.rol}
             </span>
           </div>
+
           <div className="topbar-right">
             <div className="live-indicator">
               <span className="live-dot"></span>
-              <span>En línea</span>
+              <span>Sistema en línea</span>
             </div>
           </div>
         </header>

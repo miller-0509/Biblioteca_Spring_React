@@ -13,17 +13,16 @@ import {
 } from '../api/index.js'
 import { useAuth } from '../auth/AuthContext.jsx'
 import {
-  CalendarCheck,
   Plus,
   Search,
-  Filter,
   CheckCircle2,
   AlertCircle,
   RotateCcw,
   Check,
   X,
   RefreshCw,
-  Laptop
+  Laptop,
+  Clock
 } from 'lucide-react'
 
 const ESTADOS_FISICOS = ['excelente', 'bueno', 'regular', 'dañado', 'incompleto']
@@ -148,7 +147,7 @@ function PrestamosEquipos() {
       {message.text && (
         <div className={`alert ${message.type}`}>
           {message.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
-          <span style={{ flex: 1 }}>{message.text}</span>
+          <span style={{ flex: 1, fontWeight: 600 }}>{message.text}</span>
           <button
             onClick={() => setMessage({ type: '', text: '' })}
             style={{ background: 'transparent', border: 'none', color: 'inherit', padding: 0, boxShadow: 'none' }}
@@ -170,39 +169,46 @@ function PrestamosEquipos() {
           />
         </div>
 
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          {['todos', 'pendiente', 'aceptado', 'devolver', 'rechazado'].map((st) => (
+        <div className="tab-pills">
+          {[
+            { id: 'todos', label: 'Todos' },
+            { id: 'pendiente', label: 'Pendientes' },
+            { id: 'aprobada', label: 'En Préstamo' },
+            { id: 'devolver', label: 'Devueltos' },
+            { id: 'rechazado', label: 'Rechazados' },
+          ].map((t) => (
             <button
-              key={st}
-              className={`small ${tabEstado === st ? '' : 'secondary'}`}
-              onClick={() => setTabEstado(st)}
+              key={t.id}
+              className={`tab-pill-btn ${tabEstado === t.id ? 'active' : ''}`}
+              onClick={() => setTabEstado(t.id)}
             >
-              {st.charAt(0).toUpperCase() + st.slice(1)}
+              {t.label}
             </button>
           ))}
+        </div>
 
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <button onClick={() => setShowModal(true)}>
             <Plus size={16} />
             <span>Solicitar Equipo</span>
           </button>
-
           <button className="secondary" onClick={cargar} title="Recargar">
             <RefreshCw size={15} className={cargando ? 'animate-spin' : ''} />
           </button>
         </div>
       </div>
 
-      {/* Table of Equipment Loans */}
+      {/* Loans Table */}
       <div className="table-container">
         <div className="table-responsive">
           <table>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Usuario</th>
+                <th style={{ width: 70 }}>ID</th>
                 <th>Equipo Solicitado</th>
-                <th>Fecha Solicitud</th>
-                <th>Devolución Esperada</th>
+                {staff && <th>Usuario Solicitante</th>}
+                <th>Fecha Préstamo</th>
+                <th>Límite Devolución</th>
                 <th>Estado</th>
                 <th>Renovaciones</th>
                 <th style={{ textAlign: 'right' }}>Acciones</th>
@@ -211,44 +217,55 @@ function PrestamosEquipos() {
             <tbody>
               {cargando && prestamosFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan={8}>
-                    <div style={{ padding: '36px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                      <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 10px', color: 'var(--primary)' }} />
-                      <div style={{ fontSize: 13, fontWeight: 500 }}>Cargando préstamos de equipos...</div>
+                  <td colSpan={staff ? 8 : 7}>
+                    <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                      <RefreshCw size={26} className="animate-spin" style={{ margin: '0 auto 10px', color: 'var(--primary)' }} />
+                      <div style={{ fontSize: 13.5, fontWeight: 600 }}>Cargando préstamos de equipos...</div>
                     </div>
                   </td>
                 </tr>
               ) : prestamosFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan={8}>
+                  <td colSpan={staff ? 8 : 7}>
                     <div className="empty-state">
                       <div className="empty-state-icon">
-                        <CalendarCheck size={24} />
+                        <Laptop size={24} />
                       </div>
-                      <h4>No hay préstamos de equipos</h4>
-                      <p>No se encontraron solicitudes registradas con los filtros actuales.</p>
+                      <h4>No se encontraron préstamos de equipos</h4>
+                      <p>
+                        {busqueda || tabEstado !== 'todos'
+                          ? 'No hay registros que coincidan con los filtros aplicados.'
+                          : 'No se registran solicitudes de préstamo de equipos actualmente.'}
+                      </p>
                     </div>
                   </td>
                 </tr>
               ) : (
                 prestamosFiltrados.map((p) => (
                   <tr key={p.id}>
-                    <td style={{ fontWeight: 600, color: 'var(--text-muted)' }}>#{p.id}</td>
+                    <td style={{ fontWeight: 700, color: 'var(--text-muted)' }}>#{p.id}</td>
                     <td>
-                      <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>{p.usuarioNombre}</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>ID: {p.usuarioId || '—'}</div>
-                    </td>
-                    <td>
-                      <div style={{ fontWeight: 600, color: 'var(--primary-dark)' }}>
-                        {p.equipoNombre || p.recursoNombre || 'Equipo'}
+                      <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: 14 }}>
+                        {p.equipoNombre || p.recursoNombre || `Equipo #${p.equipoId}`}
                       </div>
+                      {p.observaciones && (
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 260, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {p.observaciones}
+                        </div>
+                      )}
                     </td>
+                    {staff && (
+                      <td>
+                        <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{p.usuarioNombre}</div>
+                        <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{p.usuarioRol || 'Usuario'}</div>
+                      </td>
+                    )}
                     <td style={{ fontSize: 13 }}>
-                      {p.fechaSolicitud ? new Date(p.fechaSolicitud).toLocaleDateString() : '—'}
+                      {p.fechaPrestamo ? new Date(p.fechaPrestamo).toLocaleDateString() : '—'}
                     </td>
                     <td style={{ fontSize: 13 }}>
                       {p.fechaDevolucionEsperada ? (
-                        <span style={{ fontWeight: 600 }}>
+                        <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>
                           {new Date(p.fechaDevolucionEsperada).toLocaleDateString()}
                         </span>
                       ) : (
@@ -259,18 +276,19 @@ function PrestamosEquipos() {
                       <span className={`badge ${p.estado}`}>{p.estado}</span>
                     </td>
                     <td>
-                      <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-secondary)' }}>
-                        {p.renovacionesAplicadas ?? 0}
+                      <span style={{ fontSize: 12, background: 'var(--bg-subtle)', padding: '2px 8px', borderRadius: 4, fontWeight: 700 }}>
+                        {p.vecesRenovado || 0} / 2
                       </span>
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                        {/* Staff Approval / Rejection */}
                         {staff && p.estado === 'pendiente' && (
                           <>
                             <button
                               className="success small"
                               onClick={() => accion(() => aceptarPrestamoEquipo(p.id), 'Préstamo de equipo aprobado')}
-                              title="Aprobar"
+                              title="Aprobar Solicitud"
                             >
                               <Check size={13} />
                               <span>Aprobar</span>
@@ -278,40 +296,47 @@ function PrestamosEquipos() {
                             <button
                               className="danger small"
                               onClick={() => setRechazando(p)}
-                              title="Rechazar"
+                              title="Rechazar Solicitud"
                             >
                               <X size={13} />
                               <span>Rechazar</span>
                             </button>
                           </>
                         )}
-                        {p.estado === 'aceptado' && (
-                          <>
-                            <button
-                              className="small"
-                              onClick={() => {
-                                setDevolviendo(p)
-                                setFormDevolucion({ estadoFisico: 'bueno', estadoFinal: 'disponible', observacionDevolucion: '' })
-                              }}
-                            >
-                              <RotateCcw size={13} />
-                              <span>Devolver</span>
-                            </button>
-                            <button
-                              className="secondary small"
-                              onClick={() => setRenovando(p)}
-                            >
-                              <span>Renovar</span>
-                            </button>
-                          </>
+
+                        {/* Staff Return Inspection */}
+                        {staff && p.estado === 'aprobada' && (
+                          <button
+                            className="secondary small"
+                            onClick={() => setDevolviendo(p)}
+                            title="Recibir Devolución de Equipo"
+                          >
+                            <Laptop size={13} />
+                            <span>Recibir</span>
+                          </button>
                         )}
-                        {p.estado === 'aceptado' && p.estadoRenovacion === 'pendiente' && staff && (
+
+                        {/* User or Staff Renewal Request */}
+                        {p.estado === 'aprobada' && (p.vecesRenovado || 0) < 2 && (
+                          <button
+                            className="secondary small"
+                            onClick={() => setRenovando(p)}
+                            title="Solicitar Renovación de días"
+                          >
+                            <RotateCcw size={13} />
+                            <span>Renovar</span>
+                          </button>
+                        )}
+
+                        {/* Staff Process Renewal */}
+                        {staff && p.estado === 'solicitada' && (
                           <button
                             className="small"
-                            style={{ background: 'var(--purple)' }}
                             onClick={() => setProcesando(p)}
+                            title="Procesar Renovación"
                           >
-                            <span>Procesar Renov.</span>
+                            <Clock size={13} />
+                            <span>Procesar</span>
                           </button>
                         )}
                       </div>
@@ -324,14 +349,14 @@ function PrestamosEquipos() {
         </div>
       </div>
 
-      {/* Modal: New Equipment Loan */}
+      {/* Modal: New Equipment Loan Request */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div className="sidebar-brand-icon" style={{ width: 32, height: 32 }}>
-                  <Laptop size={16} />
+                <div className="stat-icon-wrapper indigo" style={{ width: 34, height: 34 }}>
+                  <Laptop size={18} />
                 </div>
                 <h3>Solicitar Préstamo de Equipo</h3>
               </div>
@@ -344,13 +369,13 @@ function PrestamosEquipos() {
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {staff && (
                   <label>
-                    <span>Usuario Solicitante</span>
+                    <span>Usuario Solicitante *</span>
                     <select
-                      name="usuarioId"
                       value={form.usuarioId}
                       onChange={(e) => setForm({ ...form, usuarioId: e.target.value })}
+                      required
                     >
-                      <option value="">— Seleccionar Usuario —</option>
+                      <option value="">— Seleccionar Aprendiz o Instructor —</option>
                       {usuarios.map((u) => (
                         <option key={u.id} value={u.id}>
                           {u.nombres} {u.apellidos} ({u.rol})
@@ -361,39 +386,37 @@ function PrestamosEquipos() {
                 )}
 
                 <label>
-                  <span>Seleccionar Equipo *</span>
+                  <span>Equipo de Almacén *</span>
                   <select
-                    name="equipoId"
                     value={form.equipoId}
                     onChange={(e) => setForm({ ...form, equipoId: e.target.value })}
                     required
                   >
-                    <option value="">— Seleccionar Equipo del Almacén —</option>
+                    <option value="">— Seleccionar Equipo Disponible —</option>
                     {equipos.map((eq) => (
-                      <option key={eq.id} value={eq.id}>
-                        {eq.nombre} — {eq.tipoEquipo} [{eq.numeroSerie}] ({eq.estado})
+                      <option key={eq.id} value={eq.id} disabled={!eq.disponiblePrestamo && eq.estado !== 'disponible'}>
+                        {eq.nombre} — {eq.marca} ({eq.estado})
                       </option>
                     ))}
                   </select>
                 </label>
 
                 <label>
-                  <span>Observaciones o Justificación</span>
+                  <span>Observaciones / Uso Destinado</span>
                   <textarea
-                    name="observaciones"
                     value={form.observaciones}
                     onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
-                    placeholder="Motivo del préstamo, ambiente de formación o evento..."
+                    placeholder="Ambiente formativo, clase, práctica técnica..."
                   />
                 </label>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 8 }}>
                   <button type="button" className="secondary" onClick={() => setShowModal(false)}>
                     Cancelar
                   </button>
                   <button type="submit">
                     <CheckCircle2 size={16} />
-                    <span>Confirmar Solicitud</span>
+                    <span>Enviar Solicitud</span>
                   </button>
                 </div>
               </form>
@@ -402,58 +425,73 @@ function PrestamosEquipos() {
         </div>
       )}
 
-      {/* Modal: Devolución Equipo */}
+      {/* Modal: Return Equipment (Inspection) */}
       {devolviendo && (
         <div className="modal-overlay" onClick={() => setDevolviendo(null)}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 500 }}>
             <div className="modal-header">
-              <h3>Devolución — {devolviendo.equipoNombre || devolviendo.recursoNombre || `#${devolviendo.id}`}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Laptop size={18} color="var(--primary)" />
+                <h3>Registrar Devolución de Equipo — #{devolviendo.id}</h3>
+              </div>
               <button className="modal-close-btn" onClick={() => setDevolviendo(null)}>
                 <X size={18} />
               </button>
             </div>
+
             <div className="modal-body">
               <form onSubmit={handleDevolucionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ background: '#f8fafc', padding: 12, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13 }}>
+                  <div>Equipo: <strong>{devolviendo.equipoNombre || devolviendo.recursoNombre}</strong></div>
+                  <div>Usuario: <strong>{devolviendo.usuarioNombre}</strong></div>
+                </div>
+
                 <label>
-                  <span>Estado Físico en la Entrega</span>
+                  <span>Estado Físico en la Entrega *</span>
                   <select
                     value={formDevolucion.estadoFisico}
                     onChange={(e) => setFormDevolucion({ ...formDevolucion, estadoFisico: e.target.value })}
+                    required
                   >
-                    {ESTADOS_FISICOS.map((s) => (
-                      <option key={s} value={s}>{s}</option>
+                    {ESTADOS_FISICOS.map((ef) => (
+                      <option key={ef} value={ef}>
+                        {ef.charAt(0).toUpperCase() + ef.slice(1)}
+                      </option>
                     ))}
                   </select>
                 </label>
 
                 <label>
-                  <span>Estado Final del Equipo</span>
+                  <span>Estado Final en Inventario *</span>
                   <select
                     value={formDevolucion.estadoFinal}
                     onChange={(e) => setFormDevolucion({ ...formDevolucion, estadoFinal: e.target.value })}
+                    required
                   >
-                    {ESTADOS_FINALES.map((s) => (
-                      <option key={s} value={s}>{s}</option>
+                    {ESTADOS_FINALES.map((ef) => (
+                      <option key={ef} value={ef}>
+                        {ef.charAt(0).toUpperCase() + ef.slice(1)}
+                      </option>
                     ))}
                   </select>
                 </label>
 
                 <label>
-                  <span>Observación de Devolución *</span>
+                  <span>Observación de la Devolución *</span>
                   <textarea
                     value={formDevolucion.observacionDevolucion}
                     onChange={(e) => setFormDevolucion({ ...formDevolucion, observacionDevolucion: e.target.value })}
-                    placeholder="Detalles sobre accesorios entregados, funcionamiento, cables..."
+                    placeholder="Condición del equipo, periféricos, cable de poder, limpieza..."
                     required
                   />
                 </label>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 6 }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 8 }}>
                   <button type="button" className="secondary" onClick={() => setDevolviendo(null)}>
                     Cancelar
                   </button>
-                  <button type="submit">
-                    <CheckCircle2 size={16} />
+                  <button type="submit" className="success">
+                    <Check size={15} />
                     <span>Confirmar Devolución</span>
                   </button>
                 </div>
@@ -463,135 +501,106 @@ function PrestamosEquipos() {
         </div>
       )}
 
-      {/* Modal: Renovación */}
+      {/* Modal: Request Renewal */}
       {renovando && (
         <div className="modal-overlay" onClick={() => setRenovando(null)}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 460 }}>
             <div className="modal-header">
-              <h3>Solicitar Renovación — #{renovando.id}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <RotateCcw size={18} color="var(--primary)" />
+                <h3>Solicitar Renovación — #{renovando.id}</h3>
+              </div>
               <button className="modal-close-btn" onClick={() => setRenovando(null)}>
                 <X size={18} />
               </button>
             </div>
             <div className="modal-body">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  const motivo = e.target.motivo.value
-                  if (!motivo.trim()) return
-                  accion(() => solicitarRenovacionEquipo(renovando.id, motivo), 'Solicitud de renovación enviada')
-                }}
-                style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
-              >
-                <label>
-                  <span>Motivo de la Extensión de Días *</span>
-                  <textarea
-                    name="motivo"
-                    placeholder="Justificación del uso continuo del equipo..."
-                    required
-                  />
-                </label>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-                  <button type="button" className="secondary" onClick={() => setRenovando(null)}>
-                    Cancelar
-                  </button>
-                  <button type="submit">
-                    <CheckCircle2 size={15} />
-                    <span>Enviar Renovación</span>
-                  </button>
-                </div>
-              </form>
+              <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', marginBottom: 14 }}>
+                ¿Deseas solicitar una extensión de tiempo para el préstamo del equipo <strong>{renovando.equipoNombre || renovando.recursoNombre}</strong>?
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                <button className="secondary" onClick={() => setRenovando(null)}>
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => accion(() => solicitarRenovacionEquipo(renovando.id), 'Solicitud de renovación enviada')}
+                >
+                  <Check size={15} />
+                  <span>Confirmar Solicitud</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal: Rechazar */}
+      {/* Modal: Reject Loan */}
       {rechazando && (
         <div className="modal-overlay" onClick={() => setRechazando(null)}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 460 }}>
             <div className="modal-header">
-              <h3>Rechazar Préstamo — #{rechazando.id}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <AlertCircle size={18} color="var(--rose)" />
+                <h3>Rechazar Solicitud — #{rechazando.id}</h3>
+              </div>
               <button className="modal-close-btn" onClick={() => setRechazando(null)}>
                 <X size={18} />
               </button>
             </div>
             <div className="modal-body">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  const razon = e.target.razon.value
-                  if (!razon.trim()) return
-                  accion(() => rechazarPrestamoEquipo(rechazando.id, razon), 'Solicitud de préstamo rechazada')
-                }}
-                style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
-              >
-                <label>
-                  <span>Motivo de Rechazo *</span>
-                  <textarea
-                    name="razon"
-                    placeholder="Indica el motivo del rechazo..."
-                    required
-                  />
-                </label>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-                  <button type="button" className="secondary" onClick={() => setRechazando(null)}>
-                    Cancelar
-                  </button>
-                  <button type="submit" className="danger">
-                    <X size={15} />
-                    <span>Confirmar Rechazo</span>
-                  </button>
-                </div>
-              </form>
+              <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', marginBottom: 14 }}>
+                ¿Estás seguro de rechazar la solicitud de equipo del usuario <strong>{rechazando.usuarioNombre}</strong>?
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                <button className="secondary" onClick={() => setRechazando(null)}>
+                  Cancelar
+                </button>
+                <button
+                  className="danger"
+                  onClick={() => accion(() => rechazarPrestamoEquipo(rechazando.id), 'Solicitud de préstamo rechazada')}
+                >
+                  <X size={15} />
+                  <span>Confirmar Rechazo</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal: Procesar Renovación */}
+      {/* Modal: Process Renewal (Staff) */}
       {procesando && (
         <div className="modal-overlay" onClick={() => setProcesando(null)}>
-          <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 460 }}>
+          <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
             <div className="modal-header">
-              <h3>Procesar Renovación — #{procesando.id}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Clock size={18} color="var(--primary)" />
+                <h3>Procesar Renovación de Equipo — #{procesando.id}</h3>
+              </div>
               <button className="modal-close-btn" onClick={() => setProcesando(null)}>
                 <X size={18} />
               </button>
             </div>
             <div className="modal-body">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  const accionTipo = e.target.accionTipo.value
-                  const motivo = e.target.motivo.value
-                  accion(() => procesarRenovacionEquipo(procesando.id, accionTipo, motivo), 'Renovación procesada')
-                }}
-                style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
-              >
-                <label>
-                  <span>Decisión</span>
-                  <select name="accionTipo">
-                    <option value="aprobar">Aprobar Extensión</option>
-                    <option value="rechazar">Rechazar Extensión</option>
-                  </select>
-                </label>
-
-                <label>
-                  <span>Motivo o Justificación (si se rechaza)</span>
-                  <input name="motivo" placeholder="Opcional si se aprueba" />
-                </label>
-
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 6 }}>
-                  <button type="button" className="secondary" onClick={() => setProcesando(null)}>
-                    Cancelar
-                  </button>
-                  <button type="submit">
-                    <CheckCircle2 size={15} />
-                    <span>Guardar Decisión</span>
-                  </button>
-                </div>
-              </form>
+              <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', marginBottom: 16 }}>
+                Solicitud de renovación para el equipo <strong>{procesando.equipoNombre || procesando.recursoNombre}</strong> solicitada por <strong>{procesando.usuarioNombre}</strong>.
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                <button
+                  className="danger"
+                  onClick={() => accion(() => procesarRenovacionEquipo(procesando.id, false), 'Renovación rechazada')}
+                >
+                  <X size={15} />
+                  <span>Rechazar</span>
+                </button>
+                <button
+                  className="success"
+                  onClick={() => accion(() => procesarRenovacionEquipo(procesando.id, true), 'Renovación aprobada')}
+                >
+                  <Check size={15} />
+                  <span>Aprobar Renovación</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

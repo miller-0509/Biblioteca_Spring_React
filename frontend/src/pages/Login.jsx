@@ -10,10 +10,10 @@ import {
   ShieldCheck,
   User,
   Send,
-  CheckCircle2,
   KeyRound,
   ArrowLeft,
-  Info
+  AlertCircle,
+  CheckCircle2
 } from 'lucide-react'
 
 const ROLES_VALIDOS = ['administrador', 'bibliotecario', 'almacenista', 'aprendiz', 'instructor']
@@ -130,7 +130,7 @@ function Login() {
         style={{
           bottom: '-10%',
           left: '-10%',
-          background: 'radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%)'
+          background: 'radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%)'
         }}
       ></div>
 
@@ -147,8 +147,8 @@ function Login() {
         <div
           style={{
             display: 'flex',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-            marginBottom: 20,
+            borderBottom: '2px solid #e2e8f0',
+            marginBottom: 22,
             gap: 8
           }}
         >
@@ -162,13 +162,15 @@ function Login() {
               flex: 1,
               background: 'transparent',
               border: 'none',
-              borderBottom: modo === 'login' ? '2px solid #6366f1' : '2px solid transparent',
-              color: modo === 'login' ? '#ffffff' : '#94a3b8',
+              borderBottom: modo === 'login' ? '3px solid #4f46e5' : '3px solid transparent',
+              color: modo === 'login' ? '#4f46e5' : '#64748b',
               padding: '10px 4px',
-              fontWeight: 600,
+              fontWeight: 700,
               fontSize: 14,
               cursor: 'pointer',
-              borderRadius: 0
+              borderRadius: 0,
+              boxShadow: 'none',
+              marginBottom: -2
             }}
           >
             Iniciar Sesión
@@ -183,13 +185,15 @@ function Login() {
               flex: 1,
               background: 'transparent',
               border: 'none',
-              borderBottom: modo === 'registro' ? '2px solid #10b981' : '2px solid transparent',
-              color: modo === 'registro' ? '#ffffff' : '#94a3b8',
+              borderBottom: modo === 'registro' ? '3px solid #059669' : '3px solid transparent',
+              color: modo === 'registro' ? '#059669' : '#64748b',
               padding: '10px 4px',
-              fontWeight: 600,
+              fontWeight: 700,
               fontSize: 14,
               cursor: 'pointer',
-              borderRadius: 0
+              borderRadius: 0,
+              boxShadow: 'none',
+              marginBottom: -2
             }}
           >
             Crear Cuenta
@@ -198,19 +202,21 @@ function Login() {
 
         {message.text && (
           <div className={`alert ${message.type}`} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <span>{message.text}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
+              {message.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+              <span style={{ fontWeight: 600 }}>{message.text}</span>
+            </div>
             {message.requiereVerificacion && (
               <button
                 type="button"
                 onClick={() => setModo('reenviar')}
+                className="btn-sm"
                 style={{
                   alignSelf: 'flex-start',
-                  background: 'rgba(255, 255, 255, 0.15)',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  padding: '4px 10px',
-                  fontSize: 12,
-                  color: '#fff',
-                  borderRadius: 4
+                  marginTop: 4,
+                  background: '#3730a3',
+                  color: '#ffffff',
+                  boxShadow: 'none'
                 }}
               >
                 Reenviar correo de activación →
@@ -225,7 +231,7 @@ function Login() {
             <label>
               <span>Correo institucional / usuario</span>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <Mail size={16} style={{ position: 'absolute', left: 12, color: '#94a3b8', pointerEvents: 'none' }} />
+                <Mail size={16} style={{ position: 'absolute', left: 12, color: '#64748b', pointerEvents: 'none' }} />
                 <input
                   type="email"
                   style={{ paddingLeft: 38 }}
@@ -248,17 +254,19 @@ function Login() {
                     background: 'none',
                     border: 'none',
                     padding: 0,
-                    color: '#818cf8',
-                    fontSize: 12,
+                    color: '#4f46e5',
+                    fontSize: 12.5,
+                    fontWeight: 600,
                     cursor: 'pointer',
-                    textDecoration: 'underline'
+                    textDecoration: 'underline',
+                    boxShadow: 'none'
                   }}
                 >
                   ¿Olvidaste tu contraseña?
                 </button>
               </div>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginTop: 4 }}>
-                <Lock size={16} style={{ position: 'absolute', left: 12, color: '#94a3b8', pointerEvents: 'none' }} />
+                <Lock size={16} style={{ position: 'absolute', left: 12, color: '#64748b', pointerEvents: 'none' }} />
                 <input
                   type="password"
                   style={{ paddingLeft: 38 }}
@@ -282,17 +290,19 @@ function Login() {
               )}
             </button>
 
-            <div style={{ textAlign: 'center', marginTop: 4 }}>
+            <div style={{ textAlign: 'center', marginTop: 6 }}>
               <button
                 type="button"
                 onClick={() => setModo('reenviar')}
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#94a3b8',
+                  color: '#64748b',
                   fontSize: 13,
+                  fontWeight: 500,
                   cursor: 'pointer',
-                  textDecoration: 'underline'
+                  textDecoration: 'underline',
+                  boxShadow: 'none'
                 }}
               >
                 ¿No recibiste el correo de activación? Reenvíalo aquí
@@ -308,7 +318,7 @@ function Login() {
               <label>
                 <span>Nombres</span>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                  <User size={16} style={{ position: 'absolute', left: 12, color: '#94a3b8', pointerEvents: 'none' }} />
+                  <User size={16} style={{ position: 'absolute', left: 12, color: '#64748b', pointerEvents: 'none' }} />
                   <input
                     type="text"
                     style={{ paddingLeft: 38 }}
@@ -332,9 +342,9 @@ function Login() {
             </div>
 
             <label>
-              <span>Correo electrónico institucional / personal</span>
+              <span>Correo electrónico institucional</span>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <Mail size={16} style={{ position: 'absolute', left: 12, color: '#94a3b8', pointerEvents: 'none' }} />
+                <Mail size={16} style={{ position: 'absolute', left: 12, color: '#64748b', pointerEvents: 'none' }} />
                 <input
                   type="email"
                   style={{ paddingLeft: 38 }}
@@ -349,7 +359,7 @@ function Login() {
             <label>
               <span>Contraseña (Mín. 8 caracteres, 1 mayúscula y 1 número)</span>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <Lock size={16} style={{ position: 'absolute', left: 12, color: '#94a3b8', pointerEvents: 'none' }} />
+                <Lock size={16} style={{ position: 'absolute', left: 12, color: '#64748b', pointerEvents: 'none' }} />
                 <input
                   type="password"
                   style={{ paddingLeft: 38 }}
@@ -363,30 +373,31 @@ function Login() {
 
             <div
               style={{
-                background: 'rgba(5, 150, 105, 0.08)',
-                border: '1px solid rgba(5, 150, 105, 0.25)',
+                background: '#ecfdf5',
+                border: '1px solid #a7f3d0',
                 borderRadius: 8,
                 padding: '10px 14px',
-                fontSize: 12,
-                color: '#6ee7b7',
+                fontSize: 12.5,
+                color: '#065f46',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8
               }}
             >
-              <ShieldCheck size={16} style={{ flexShrink: 0 }} />
+              <ShieldCheck size={16} style={{ flexShrink: 0, color: '#059669' }} />
               <span>
-                Al registrarte se enviará un enlace de verificación a tu correo. Deberás confirmarlo para poder acceder.
+                Al registrarte se enviará un enlace de verificación a tu correo para activar tu cuenta.
               </span>
             </div>
 
             <button
               type="submit"
               disabled={cargando}
-              style={{ marginTop: 4, padding: '11px 16px', background: '#059669' }}
+              className="btn-success"
+              style={{ marginTop: 4, padding: '11px 16px' }}
             >
               {cargando ? (
-                <span>Creando cuenta y enviando correo...</span>
+                <span>Creando cuenta...</span>
               ) : (
                 <>
                   <span>Registrarme y recibir correo</span>
@@ -400,14 +411,14 @@ function Login() {
         {/* ── MODO 3: REENVIAR VERIFICACIÓN ── */}
         {modo === 'reenviar' && (
           <form onSubmit={handleReenviarVerificacion} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13.5, color: '#475569', lineHeight: 1.5 }}>
               Ingresa el correo con el que te registraste para enviarte un nuevo enlace de activación.
             </div>
 
             <label>
               <span>Correo registrado</span>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <Mail size={16} style={{ position: 'absolute', left: 12, color: '#94a3b8', pointerEvents: 'none' }} />
+                <Mail size={16} style={{ position: 'absolute', left: 12, color: '#64748b', pointerEvents: 'none' }} />
                 <input
                   type="email"
                   style={{ paddingLeft: 38 }}
@@ -433,12 +444,8 @@ function Login() {
             <button
               type="button"
               onClick={() => setModo('login')}
+              className="btn-secondary"
               style={{
-                background: 'none',
-                border: 'none',
-                color: '#cbd5e1',
-                fontSize: 13,
-                cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -454,14 +461,14 @@ function Login() {
         {/* ── MODO 4: RECUPERAR CONTRASEÑA ── */}
         {modo === 'recuperar' && (
           <form onSubmit={handleRecuperarPassword} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.5 }}>
-              Te enviaremos las instrucciones de restablecimiento a tu bandeja de entrada.
+            <div style={{ fontSize: 13.5, color: '#475569', lineHeight: 1.5 }}>
+              Te enviaremos las instrucciones de restablecimiento de contraseña a tu bandeja de entrada.
             </div>
 
             <label>
               <span>Correo de tu cuenta</span>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <Mail size={16} style={{ position: 'absolute', left: 12, color: '#94a3b8', pointerEvents: 'none' }} />
+                <Mail size={16} style={{ position: 'absolute', left: 12, color: '#64748b', pointerEvents: 'none' }} />
                 <input
                   type="email"
                   style={{ paddingLeft: 38 }}
@@ -487,12 +494,8 @@ function Login() {
             <button
               type="button"
               onClick={() => setModo('login')}
+              className="btn-secondary"
               style={{
-                background: 'none',
-                border: 'none',
-                color: '#cbd5e1',
-                fontSize: 13,
-                cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

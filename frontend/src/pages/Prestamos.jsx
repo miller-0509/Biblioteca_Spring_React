@@ -16,18 +16,13 @@ import {
   BookmarkCheck,
   Plus,
   Search,
-  Filter,
   CheckCircle2,
   AlertCircle,
   Clock,
   RotateCcw,
   Check,
   X,
-  RefreshCw,
-  User,
-  BookOpen,
-  Calendar,
-  AlertTriangle
+  RefreshCw
 } from 'lucide-react'
 
 const ESTADOS_FISICOS = ['excelente', 'bueno', 'regular', 'deteriorado', 'dañado', 'incompleto']
@@ -136,7 +131,7 @@ function PrestamosLibros() {
     }
     try {
       await devolverPrestamoLibro(devolviendo.id, formDevolucion)
-      setMessage({ type: 'success', text: 'Devolución registrada correctamente (las multas se aplican automáticamente si hubo retraso)' })
+      setMessage({ type: 'success', text: 'Devolución registrada correctamente (las sanciones se calculan automáticamente en caso de retraso)' })
       setDevolviendo(null)
       setFormDevolucion({ estadoFisico: 'bueno', estadoFinal: 'disponible', observacionDevolucion: '' })
       cargar()
@@ -151,7 +146,7 @@ function PrestamosLibros() {
       {message.text && (
         <div className={`alert ${message.type}`}>
           {message.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
-          <span style={{ flex: 1 }}>{message.text}</span>
+          <span style={{ flex: 1, fontWeight: 600 }}>{message.text}</span>
           <button
             onClick={() => setMessage({ type: '', text: '' })}
             style={{ background: 'transparent', border: 'none', color: 'inherit', padding: 0, boxShadow: 'none' }}
@@ -167,45 +162,52 @@ function PrestamosLibros() {
           <Search size={16} className="search-icon" />
           <input
             type="text"
-            placeholder="Buscar por libro, usuario o ID..."
+            placeholder="Buscar por libro, usuario o número de préstamo..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
         </div>
 
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          {['todos', 'pendiente', 'aceptado', 'devolver', 'rechazado'].map((st) => (
+        <div className="tab-pills">
+          {[
+            { id: 'todos', label: 'Todos' },
+            { id: 'pendiente', label: 'Pendientes' },
+            { id: 'aprobada', label: 'En Préstamo' },
+            { id: 'devolver', label: 'Devueltos' },
+            { id: 'rechazado', label: 'Rechazados' },
+          ].map((t) => (
             <button
-              key={st}
-              className={`small ${tabEstado === st ? '' : 'secondary'}`}
-              onClick={() => setTabEstado(st)}
+              key={t.id}
+              className={`tab-pill-btn ${tabEstado === t.id ? 'active' : ''}`}
+              onClick={() => setTabEstado(t.id)}
             >
-              {st.charAt(0).toUpperCase() + st.slice(1)}
+              {t.label}
             </button>
           ))}
+        </div>
 
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <button onClick={() => setShowModal(true)}>
             <Plus size={16} />
             <span>Solicitar Préstamo</span>
           </button>
-
           <button className="secondary" onClick={cargar} title="Recargar">
             <RefreshCw size={15} className={cargando ? 'animate-spin' : ''} />
           </button>
         </div>
       </div>
 
-      {/* Table of Loans */}
+      {/* Loans Table */}
       <div className="table-container">
         <div className="table-responsive">
           <table>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Usuario</th>
+                <th style={{ width: 70 }}>ID</th>
                 <th>Libro Solicitado</th>
-                <th>Fecha Solicitud</th>
-                <th>Devolución Esperada</th>
+                {staff && <th>Usuario Solicitante</th>}
+                <th>Fecha Préstamo</th>
+                <th>Límite Devolución</th>
                 <th>Estado</th>
                 <th>Renovaciones</th>
                 <th style={{ textAlign: 'right' }}>Acciones</th>
@@ -214,42 +216,55 @@ function PrestamosLibros() {
             <tbody>
               {cargando && prestamosFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan={8}>
-                    <div style={{ padding: '36px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                      <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 10px', color: 'var(--primary)' }} />
-                      <div style={{ fontSize: 13, fontWeight: 500 }}>Cargando registros de préstamos...</div>
+                  <td colSpan={staff ? 8 : 7}>
+                    <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                      <RefreshCw size={26} className="animate-spin" style={{ margin: '0 auto 10px', color: 'var(--primary)' }} />
+                      <div style={{ fontSize: 13.5, fontWeight: 600 }}>Cargando préstamos de libros...</div>
                     </div>
                   </td>
                 </tr>
               ) : prestamosFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan={8}>
+                  <td colSpan={staff ? 8 : 7}>
                     <div className="empty-state">
                       <div className="empty-state-icon">
                         <BookmarkCheck size={24} />
                       </div>
-                      <h4>No hay préstamos para mostrar</h4>
-                      <p>No se encontraron registros bajo el filtro o búsqueda seleccionados.</p>
+                      <h4>No se encontraron préstamos</h4>
+                      <p>
+                        {busqueda || tabEstado !== 'todos'
+                          ? 'No hay préstamos que coincidan con la pestaña o búsqueda aplicada.'
+                          : 'No se registran solicitudes de préstamo actualmente.'}
+                      </p>
                     </div>
                   </td>
                 </tr>
               ) : (
                 prestamosFiltrados.map((p) => (
                   <tr key={p.id}>
-                    <td style={{ fontWeight: 600, color: 'var(--text-muted)' }}>#{p.id}</td>
+                    <td style={{ fontWeight: 700, color: 'var(--text-muted)' }}>#{p.id}</td>
                     <td>
-                      <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>{p.usuarioNombre}</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>ID: {p.usuarioId || '—'}</div>
+                      <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: 14 }}>
+                        {p.libroTitulo || `Libro #${p.libroId}`}
+                      </div>
+                      {p.observaciones && (
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 260, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {p.observaciones}
+                        </div>
+                      )}
                     </td>
-                    <td>
-                      <div style={{ fontWeight: 600, color: 'var(--primary-dark)' }}>{p.libroTitulo}</div>
-                    </td>
+                    {staff && (
+                      <td>
+                        <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{p.usuarioNombre}</div>
+                        <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{p.usuarioRol || 'Usuario'}</div>
+                      </td>
+                    )}
                     <td style={{ fontSize: 13 }}>
-                      {p.fechaSolicitud ? new Date(p.fechaSolicitud).toLocaleDateString() : '—'}
+                      {p.fechaPrestamo ? new Date(p.fechaPrestamo).toLocaleDateString() : '—'}
                     </td>
                     <td style={{ fontSize: 13 }}>
                       {p.fechaDevolucionEsperada ? (
-                        <span style={{ fontWeight: 600 }}>
+                        <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>
                           {new Date(p.fechaDevolucionEsperada).toLocaleDateString()}
                         </span>
                       ) : (
@@ -260,18 +275,19 @@ function PrestamosLibros() {
                       <span className={`badge ${p.estado}`}>{p.estado}</span>
                     </td>
                     <td>
-                      <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-secondary)' }}>
-                        {p.renovacionesAplicadas ?? 0}
+                      <span style={{ fontSize: 12, background: 'var(--bg-subtle)', padding: '2px 8px', borderRadius: 4, fontWeight: 700 }}>
+                        {p.vecesRenovado || 0} / 2
                       </span>
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                        {/* Staff Approval / Rejection */}
                         {staff && p.estado === 'pendiente' && (
                           <>
                             <button
                               className="success small"
-                              onClick={() => accion(() => aceptarPrestamoLibro(p.id), 'Préstamo aprobado')}
-                              title="Aprobar préstamo"
+                              onClick={() => accion(() => aceptarPrestamoLibro(p.id), 'Préstamo aprobado con éxito')}
+                              title="Aprobar Solicitud"
                             >
                               <Check size={13} />
                               <span>Aprobar</span>
@@ -279,40 +295,47 @@ function PrestamosLibros() {
                             <button
                               className="danger small"
                               onClick={() => setRechazando(p)}
-                              title="Rechazar préstamo"
+                              title="Rechazar Solicitud"
                             >
                               <X size={13} />
                               <span>Rechazar</span>
                             </button>
                           </>
                         )}
-                        {p.estado === 'aceptado' && (
-                          <>
-                            <button
-                              className="small"
-                              onClick={() => {
-                                setDevolviendo(p)
-                                setFormDevolucion({ estadoFisico: 'bueno', estadoFinal: 'disponible', observacionDevolucion: '' })
-                              }}
-                            >
-                              <RotateCcw size={13} />
-                              <span>Devolver</span>
-                            </button>
-                            <button
-                              className="secondary small"
-                              onClick={() => setRenovando(p)}
-                            >
-                              <span>Renovar</span>
-                            </button>
-                          </>
+
+                        {/* Staff Return Inspection */}
+                        {staff && p.estado === 'aprobada' && (
+                          <button
+                            className="secondary small"
+                            onClick={() => setDevolviendo(p)}
+                            title="Recibir Devolución"
+                          >
+                            <BookmarkCheck size={13} />
+                            <span>Recibir</span>
+                          </button>
                         )}
-                        {p.estado === 'aceptado' && p.estadoRenovacion === 'pendiente' && staff && (
+
+                        {/* User or Staff Renewal Request */}
+                        {p.estado === 'aprobada' && (p.vecesRenovado || 0) < 2 && (
+                          <button
+                            className="secondary small"
+                            onClick={() => setRenovando(p)}
+                            title="Solicitar Renovación de días"
+                          >
+                            <RotateCcw size={13} />
+                            <span>Renovar</span>
+                          </button>
+                        )}
+
+                        {/* Staff Process Renewal */}
+                        {staff && p.estado === 'solicitada' && (
                           <button
                             className="small"
-                            style={{ background: 'var(--purple)' }}
                             onClick={() => setProcesando(p)}
+                            title="Procesar Renovación Pendiente"
                           >
-                            <span>Procesar Renov.</span>
+                            <Clock size={13} />
+                            <span>Procesar</span>
                           </button>
                         )}
                       </div>
@@ -331,8 +354,8 @@ function PrestamosLibros() {
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div className="sidebar-brand-icon" style={{ width: 32, height: 32 }}>
-                  <BookmarkCheck size={16} />
+                <div className="stat-icon-wrapper emerald" style={{ width: 34, height: 34 }}>
+                  <BookmarkCheck size={18} />
                 </div>
                 <h3>Solicitar Préstamo de Libro</h3>
               </div>
@@ -345,13 +368,13 @@ function PrestamosLibros() {
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {staff && (
                   <label>
-                    <span>Usuario Solicitante</span>
+                    <span>Usuario Solicitante *</span>
                     <select
-                      name="usuarioId"
                       value={form.usuarioId}
                       onChange={(e) => setForm({ ...form, usuarioId: e.target.value })}
+                      required
                     >
-                      <option value="">— Seleccionar Usuario —</option>
+                      <option value="">— Seleccionar Aprendiz o Instructor —</option>
                       {usuarios.map((u) => (
                         <option key={u.id} value={u.id}>
                           {u.nombres} {u.apellidos} ({u.rol})
@@ -362,16 +385,15 @@ function PrestamosLibros() {
                 )}
 
                 <label>
-                  <span>Seleccionar Libro *</span>
+                  <span>Libro del Catálogo *</span>
                   <select
-                    name="libroId"
                     value={form.libroId}
                     onChange={(e) => setForm({ ...form, libroId: e.target.value })}
                     required
                   >
-                    <option value="">— Seleccionar del catálogo —</option>
+                    <option value="">— Seleccionar Libro Disponible —</option>
                     {libros.map((l) => (
-                      <option key={l.id} value={l.id}>
+                      <option key={l.id} value={l.id} disabled={!l.disponiblePrestamo && l.estado !== 'disponible'}>
                         {l.titulo} — {l.autor} ({l.estado})
                       </option>
                     ))}
@@ -379,22 +401,21 @@ function PrestamosLibros() {
                 </label>
 
                 <label>
-                  <span>Observaciones o Justificación</span>
+                  <span>Observaciones o Motivo del Préstamo</span>
                   <textarea
-                    name="observaciones"
                     value={form.observaciones}
                     onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
-                    placeholder="Motivo del préstamo, proyecto o asignatura..."
+                    placeholder="Materia, proyecto formativo, actividad académica..."
                   />
                 </label>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 8 }}>
                   <button type="button" className="secondary" onClick={() => setShowModal(false)}>
                     Cancelar
                   </button>
                   <button type="submit">
                     <CheckCircle2 size={16} />
-                    <span>Confirmar Solicitud</span>
+                    <span>Enviar Solicitud</span>
                   </button>
                 </div>
               </form>
@@ -403,58 +424,73 @@ function PrestamosLibros() {
         </div>
       )}
 
-      {/* Modal: Devolución */}
+      {/* Modal: Return Book (Inspection) */}
       {devolviendo && (
         <div className="modal-overlay" onClick={() => setDevolviendo(null)}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 500 }}>
             <div className="modal-header">
-              <h3>Registrar Devolución — {devolviendo.libroTitulo}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <BookmarkCheck size={18} color="var(--primary)" />
+                <h3>Registrar Devolución — Préstamo #{devolviendo.id}</h3>
+              </div>
               <button className="modal-close-btn" onClick={() => setDevolviendo(null)}>
                 <X size={18} />
               </button>
             </div>
+
             <div className="modal-body">
               <form onSubmit={handleDevolucionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ background: '#f8fafc', padding: 12, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13 }}>
+                  <div>Libro: <strong>{devolviendo.libroTitulo}</strong></div>
+                  <div>Usuario: <strong>{devolviendo.usuarioNombre}</strong></div>
+                </div>
+
                 <label>
-                  <span>Estado Físico en la Entrega</span>
+                  <span>Estado Físico en la Entrega *</span>
                   <select
                     value={formDevolucion.estadoFisico}
                     onChange={(e) => setFormDevolucion({ ...formDevolucion, estadoFisico: e.target.value })}
+                    required
                   >
-                    {ESTADOS_FISICOS.map((s) => (
-                      <option key={s} value={s}>{s}</option>
+                    {ESTADOS_FISICOS.map((ef) => (
+                      <option key={ef} value={ef}>
+                        {ef.charAt(0).toUpperCase() + ef.slice(1)}
+                      </option>
                     ))}
                   </select>
                 </label>
 
                 <label>
-                  <span>Estado Final del Libro</span>
+                  <span>Estado Final del Recurso en Catálogo *</span>
                   <select
                     value={formDevolucion.estadoFinal}
                     onChange={(e) => setFormDevolucion({ ...formDevolucion, estadoFinal: e.target.value })}
+                    required
                   >
-                    {ESTADOS_FINALES.map((s) => (
-                      <option key={s} value={s}>{s}</option>
+                    {ESTADOS_FINALES.map((ef) => (
+                      <option key={ef} value={ef}>
+                        {ef.charAt(0).toUpperCase() + ef.slice(1)}
+                      </option>
                     ))}
                   </select>
                 </label>
 
                 <label>
-                  <span>Observación de Devolución *</span>
+                  <span>Observación de la Devolución *</span>
                   <textarea
                     value={formDevolucion.observacionDevolucion}
                     onChange={(e) => setFormDevolucion({ ...formDevolucion, observacionDevolucion: e.target.value })}
-                    placeholder="Condiciones del libro al momento de la entrega..."
+                    placeholder="Condición del libro al recibir, páginas, cubierta, tiempo de retraso si aplica..."
                     required
                   />
                 </label>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 6 }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 8 }}>
                   <button type="button" className="secondary" onClick={() => setDevolviendo(null)}>
                     Cancelar
                   </button>
-                  <button type="submit">
-                    <CheckCircle2 size={16} />
+                  <button type="submit" className="success">
+                    <Check size={15} />
                     <span>Confirmar Devolución</span>
                   </button>
                 </div>
@@ -464,135 +500,106 @@ function PrestamosLibros() {
         </div>
       )}
 
-      {/* Modal: Renovación */}
+      {/* Modal: Request Renewal */}
       {renovando && (
         <div className="modal-overlay" onClick={() => setRenovando(null)}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 460 }}>
             <div className="modal-header">
-              <h3>Solicitar Renovación — #{renovando.id}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <RotateCcw size={18} color="var(--primary)" />
+                <h3>Solicitar Renovación — #{renovando.id}</h3>
+              </div>
               <button className="modal-close-btn" onClick={() => setRenovando(null)}>
                 <X size={18} />
               </button>
             </div>
             <div className="modal-body">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  const motivo = e.target.motivo.value
-                  if (!motivo.trim()) return
-                  accion(() => solicitarRenovacionLibro(renovando.id, motivo), 'Solicitud de renovación enviada')
-                }}
-                style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
-              >
-                <label>
-                  <span>Motivo de la Extensión de Tiempo *</span>
-                  <textarea
-                    name="motivo"
-                    placeholder="Explica por qué necesitas más días con el libro..."
-                    required
-                  />
-                </label>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-                  <button type="button" className="secondary" onClick={() => setRenovando(null)}>
-                    Cancelar
-                  </button>
-                  <button type="submit">
-                    <CheckCircle2 size={15} />
-                    <span>Enviar Renovación</span>
-                  </button>
-                </div>
-              </form>
+              <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', marginBottom: 14 }}>
+                ¿Deseas solicitar una extensión de tiempo para el préstamo del libro <strong>{renovando.libroTitulo}</strong>?
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                <button className="secondary" onClick={() => setRenovando(null)}>
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => accion(() => solicitarRenovacionLibro(renovando.id), 'Solicitud de renovación enviada')}
+                >
+                  <Check size={15} />
+                  <span>Confirmar Solicitud</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal: Rechazar */}
+      {/* Modal: Reject Loan */}
       {rechazando && (
         <div className="modal-overlay" onClick={() => setRechazando(null)}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 460 }}>
             <div className="modal-header">
-              <h3>Rechazar Solicitud — #{rechazando.id}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <AlertCircle size={18} color="var(--rose)" />
+                <h3>Rechazar Solicitud — #{rechazando.id}</h3>
+              </div>
               <button className="modal-close-btn" onClick={() => setRechazando(null)}>
                 <X size={18} />
               </button>
             </div>
             <div className="modal-body">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  const razon = e.target.razon.value
-                  if (!razon.trim()) return
-                  accion(() => rechazarPrestamoLibro(rechazando.id, razon), 'Solicitud de préstamo rechazada')
-                }}
-                style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
-              >
-                <label>
-                  <span>Motivo de Rechazo *</span>
-                  <textarea
-                    name="razon"
-                    placeholder="Indica el motivo del rechazo para informar al usuario..."
-                    required
-                  />
-                </label>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-                  <button type="button" className="secondary" onClick={() => setRechazando(null)}>
-                    Cancelar
-                  </button>
-                  <button type="submit" className="danger">
-                    <X size={15} />
-                    <span>Confirmar Rechazo</span>
-                  </button>
-                </div>
-              </form>
+              <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', marginBottom: 14 }}>
+                ¿Estás seguro de rechazar la solicitud del usuario <strong>{rechazando.usuarioNombre}</strong>?
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                <button className="secondary" onClick={() => setRechazando(null)}>
+                  Cancelar
+                </button>
+                <button
+                  className="danger"
+                  onClick={() => accion(() => rechazarPrestamoLibro(rechazando.id), 'Solicitud de préstamo rechazada')}
+                >
+                  <X size={15} />
+                  <span>Confirmar Rechazo</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal: Procesar Renovación */}
+      {/* Modal: Process Renewal (Staff) */}
       {procesando && (
         <div className="modal-overlay" onClick={() => setProcesando(null)}>
-          <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 460 }}>
+          <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
             <div className="modal-header">
-              <h3>Procesar Renovación — #{procesando.id}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Clock size={18} color="var(--primary)" />
+                <h3>Procesar Renovación — #{procesando.id}</h3>
+              </div>
               <button className="modal-close-btn" onClick={() => setProcesando(null)}>
                 <X size={18} />
               </button>
             </div>
             <div className="modal-body">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  const accionTipo = e.target.accionTipo.value
-                  const motivo = e.target.motivo.value
-                  accion(() => procesarRenovacionLibro(procesando.id, accionTipo, motivo), 'Renovación procesada con éxito')
-                }}
-                style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
-              >
-                <label>
-                  <span>Decisión</span>
-                  <select name="accionTipo">
-                    <option value="aprobar">Aprobar Extensión</option>
-                    <option value="rechazar">Rechazar Extensión</option>
-                  </select>
-                </label>
-
-                <label>
-                  <span>Motivo o Justificación (si se rechaza)</span>
-                  <input name="motivo" placeholder="Opcional si se aprueba" />
-                </label>
-
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 6 }}>
-                  <button type="button" className="secondary" onClick={() => setProcesando(null)}>
-                    Cancelar
-                  </button>
-                  <button type="submit">
-                    <CheckCircle2 size={15} />
-                    <span>Guardar Decisión</span>
-                  </button>
-                </div>
-              </form>
+              <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', marginBottom: 16 }}>
+                Solicitud de renovación para el libro <strong>{procesando.libroTitulo}</strong> solicitada por <strong>{procesando.usuarioNombre}</strong>.
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                <button
+                  className="danger"
+                  onClick={() => accion(() => procesarRenovacionLibro(procesando.id, false), 'Renovación rechazada')}
+                >
+                  <X size={15} />
+                  <span>Rechazar</span>
+                </button>
+                <button
+                  className="success"
+                  onClick={() => accion(() => procesarRenovacionLibro(procesando.id, true), 'Renovación aprobada')}
+                >
+                  <Check size={15} />
+                  <span>Aprobar Renovación</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

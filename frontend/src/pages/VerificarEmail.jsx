@@ -9,7 +9,6 @@ import {
   ArrowRight,
   RefreshCw,
   Send,
-  Sparkles,
   ShieldCheck
 } from 'lucide-react'
 
@@ -85,13 +84,13 @@ function VerificarEmail() {
         style={{
           bottom: '-10%',
           left: '-10%',
-          background: 'radial-gradient(circle, rgba(5, 150, 105, 0.15) 0%, transparent 70%)'
+          background: 'radial-gradient(circle, rgba(5, 150, 105, 0.18) 0%, transparent 70%)'
         }}
       ></div>
 
       <div className="login-card" style={{ maxWidth: 500, textAlign: 'center' }}>
         <div className="login-header">
-          <div className="login-logo" style={{ margin: '0 auto 12px' }}>
+          <div className="login-logo" style={{ margin: '0 auto 14px' }}>
             <Library size={28} />
           </div>
           <h2>Verificación de Cuenta</h2>
@@ -101,9 +100,11 @@ function VerificarEmail() {
         {/* Estado: Cargando */}
         {estado === 'cargando' && (
           <div style={{ padding: '32px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-            <RefreshCw size={40} className="animate-spin" style={{ color: '#059669' }} />
-            <h3 style={{ margin: 0, fontSize: 18, color: '#f8fafc' }}>Verificando tu correo...</h3>
-            <p style={{ margin: 0, fontSize: 14, color: '#94a3b8' }}>
+            <RefreshCw size={40} className="animate-spin" style={{ color: '#4f46e5' }} />
+            <h3 style={{ margin: 0, fontSize: 18, color: '#0f172a', fontWeight: 700 }}>
+              Verificando tu correo...
+            </h3>
+            <p style={{ margin: 0, fontSize: 14, color: '#64748b' }}>
               Validando el token de seguridad. Por favor espera un momento.
             </p>
           </div>
@@ -111,48 +112,48 @@ function VerificarEmail() {
 
         {/* Estado: Éxito */}
         {estado === 'exito' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '16px 0' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '10px 0' }}>
             <div
               style={{
                 width: 64,
                 height: 64,
                 borderRadius: '50%',
-                background: 'rgba(5, 150, 105, 0.15)',
-                border: '2px solid rgba(5, 150, 105, 0.4)',
+                background: '#ecfdf5',
+                border: '2px solid #a7f3d0',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: '0 auto',
-                color: '#10b981'
+                color: '#059669'
               }}
             >
               <CheckCircle2 size={36} />
             </div>
 
             <div>
-              <h3 style={{ margin: '0 0 8px', fontSize: 20, color: '#f8fafc' }}>
+              <h3 style={{ margin: '0 0 8px', fontSize: 20, color: '#0f172a', fontWeight: 800 }}>
                 ¡Correo Verificado con Éxito!
               </h3>
-              <p style={{ margin: 0, fontSize: 14, color: '#94a3b8', lineHeight: 1.5 }}>
+              <p style={{ margin: 0, fontSize: 14, color: '#475569', lineHeight: 1.5 }}>
                 {mensaje}
               </p>
             </div>
 
             <div
               style={{
-                background: 'rgba(16, 185, 129, 0.08)',
-                border: '1px solid rgba(16, 185, 129, 0.2)',
+                background: '#ecfdf5',
+                border: '1px solid #a7f3d0',
                 borderRadius: 8,
                 padding: '12px 16px',
                 fontSize: 13,
-                color: '#6ee7b7',
+                color: '#065f46',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 8
               }}
             >
-              <ShieldCheck size={16} />
+              <ShieldCheck size={16} color="#059669" />
               <span>Tu cuenta ya está completamente autorizada para ingresar.</span>
             </div>
 
@@ -175,29 +176,29 @@ function VerificarEmail() {
 
         {/* Estado: Error o Sin Token */}
         {(estado === 'error' || estado === 'sin_token') && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '16px 0' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '10px 0' }}>
             <div
               style={{
                 width: 64,
                 height: 64,
                 borderRadius: '50%',
-                background: 'rgba(239, 68, 68, 0.15)',
-                border: '2px solid rgba(239, 68, 68, 0.4)',
+                background: '#fef2f2',
+                border: '2px solid #fecaca',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: '0 auto',
-                color: '#f87171'
+                color: '#dc2626'
               }}
             >
               <AlertCircle size={36} />
             </div>
 
             <div>
-              <h3 style={{ margin: '0 0 8px', fontSize: 20, color: '#f8fafc' }}>
+              <h3 style={{ margin: '0 0 8px', fontSize: 20, color: '#0f172a', fontWeight: 800 }}>
                 {estado === 'sin_token' ? 'Enlace Incompleto' : 'Enlace Inválido o Expirado'}
               </h3>
-              <p style={{ margin: 0, fontSize: 14, color: '#94a3b8', lineHeight: 1.5 }}>
+              <p style={{ margin: 0, fontSize: 14, color: '#475569', lineHeight: 1.5 }}>
                 {mensaje}
               </p>
             </div>
@@ -214,21 +215,21 @@ function VerificarEmail() {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 12,
-                background: 'rgba(255, 255, 255, 0.03)',
-                padding: 16,
-                borderRadius: 8,
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                background: '#f8fafc',
+                padding: 18,
+                borderRadius: 10,
+                border: '1px solid #e2e8f0',
                 textAlign: 'left'
               }}
             >
               <label>
-                <span style={{ fontSize: 13, color: '#cbd5e1' }}>
+                <span style={{ fontSize: 13, color: '#334155', fontWeight: 600 }}>
                   ¿Necesitas un nuevo enlace? Ingresa tu correo:
                 </span>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginTop: 6 }}>
                   <Mail
                     size={16}
-                    style={{ position: 'absolute', left: 12, color: '#94a3b8', pointerEvents: 'none' }}
+                    style={{ position: 'absolute', left: 12, color: '#64748b', pointerEvents: 'none' }}
                   />
                   <input
                     type="email"
@@ -249,7 +250,7 @@ function VerificarEmail() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 8,
-                  background: '#334155'
+                  background: '#4f46e5'
                 }}
               >
                 {reenviando ? (
@@ -266,8 +267,9 @@ function VerificarEmail() {
             <Link
               to="/login"
               style={{
-                color: '#a5b4fc',
+                color: '#4f46e5',
                 fontSize: 14,
+                fontWeight: 600,
                 textDecoration: 'none',
                 marginTop: 4,
                 display: 'inline-block'

@@ -9,15 +9,14 @@ import {
   BookOpen,
   Plus,
   Search,
-  Filter,
   CheckCircle2,
   AlertCircle,
   Trash2,
   RefreshCw,
   X,
-  Layers,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  BookMarked
 } from 'lucide-react'
 
 import { useAuth } from '../auth/AuthContext.jsx'
@@ -75,6 +74,7 @@ function Libros() {
 
   useEffect(() => {
     cargar()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page])
 
   const librosFiltrados = useMemo(() => {
@@ -138,7 +138,7 @@ function Libros() {
       {message.text && (
         <div className={`alert ${message.type}`}>
           {message.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
-          <span style={{ flex: 1 }}>{message.text}</span>
+          <span style={{ flex: 1, fontWeight: 600 }}>{message.text}</span>
           <button
             onClick={() => setMessage({ type: '', text: '' })}
             style={{ background: 'transparent', border: 'none', color: 'inherit', padding: 0, boxShadow: 'none' }}
@@ -154,17 +154,17 @@ function Libros() {
           <Search size={16} className="search-icon" />
           <input
             type="text"
-            placeholder="Buscar por título, autor o código..."
+            placeholder="Buscar por título, autor o código de barra..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
         </div>
 
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           <select
             value={filtroEstado}
             onChange={(e) => setFiltroEstado(e.target.value)}
-            style={{ minWidth: 150 }}
+            style={{ minWidth: 160 }}
           >
             <option value="">Todos los estados</option>
             {ESTADOS.map((s) => (
@@ -193,13 +193,13 @@ function Libros() {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Título</th>
+                <th style={{ width: 70 }}>ID</th>
+                <th>Título y Descripción</th>
                 <th>Autor</th>
                 <th>Género</th>
                 <th>Código Único</th>
                 <th>Estado</th>
-                <th>Disponible</th>
+                <th>Disponibilidad</th>
                 <th>Ubicación</th>
                 {puedeGestionar && <th style={{ textAlign: 'right' }}>Acciones</th>}
               </tr>
@@ -208,9 +208,9 @@ function Libros() {
               {cargando && librosFiltrados.length === 0 ? (
                 <tr>
                   <td colSpan={puedeGestionar ? 9 : 8}>
-                    <div style={{ padding: '36px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                      <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 10px', color: 'var(--primary)' }} />
-                      <div style={{ fontSize: 13, fontWeight: 500 }}>Cargando catálogo de libros...</div>
+                    <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                      <RefreshCw size={26} className="animate-spin" style={{ margin: '0 auto 10px', color: 'var(--primary)' }} />
+                      <div style={{ fontSize: 13.5, fontWeight: 600 }}>Cargando catálogo de libros...</div>
                     </div>
                   </td>
                 </tr>
@@ -228,7 +228,7 @@ function Libros() {
                           : 'Aún no hay libros registrados en el catálogo.'}
                       </p>
                       {!busqueda && !filtroEstado && puedeGestionar && (
-                        <button onClick={() => setShowModal(true)} style={{ marginTop: 14 }}>
+                        <button onClick={() => setShowModal(true)} style={{ marginTop: 16 }}>
                           <Plus size={15} />
                           <span>Registrar Primer Libro</span>
                         </button>
@@ -239,23 +239,23 @@ function Libros() {
               ) : (
                 librosFiltrados.map((libro) => (
                   <tr key={libro.id}>
-                    <td style={{ fontWeight: 600, color: 'var(--text-muted)' }}>#{libro.id}</td>
+                    <td style={{ fontWeight: 700, color: 'var(--text-muted)' }}>#{libro.id}</td>
                     <td>
-                      <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>{libro.titulo}</div>
+                      <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: 14 }}>{libro.titulo}</div>
                       {libro.descripcion && (
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 260, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 280, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 1 }}>
                           {libro.descripcion}
                         </div>
                       )}
                     </td>
-                    <td>{libro.autor}</td>
+                    <td style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>{libro.autor}</td>
                     <td>
-                      <span style={{ fontSize: 12.5, background: 'var(--bg-subtle)', padding: '2px 8px', borderRadius: 4 }}>
-                        {libro.genero}
+                      <span style={{ fontSize: 12, background: 'var(--bg-subtle)', color: 'var(--text-secondary)', padding: '2px 8px', borderRadius: 4, fontWeight: 600 }}>
+                        {libro.genero || 'General'}
                       </span>
                     </td>
                     <td>
-                      <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>
+                      <code style={{ background: '#f1f5f9', color: '#334155', padding: '2px 7px', borderRadius: 4, fontSize: 12, fontWeight: 700 }}>
                         {libro.codigoUnico}
                       </code>
                     </td>
@@ -264,9 +264,13 @@ function Libros() {
                     </td>
                     <td>
                       {libro.disponiblePrestamo ? (
-                        <span style={{ color: 'var(--emerald)', fontWeight: 600, fontSize: 13 }}>● Sí</span>
+                        <span style={{ color: 'var(--emerald-800)', background: 'var(--emerald-50)', border: '1px solid var(--emerald-200)', padding: '2px 8px', borderRadius: '999px', fontWeight: 700, fontSize: 11.5 }}>
+                          ● Disponible
+                        </span>
                       ) : (
-                        <span style={{ color: 'var(--rose)', fontWeight: 600, fontSize: 13 }}>● No</span>
+                        <span style={{ color: 'var(--rose-800)', background: 'var(--rose-50)', border: '1px solid var(--rose-200)', padding: '2px 8px', borderRadius: '999px', fontWeight: 700, fontSize: 11.5 }}>
+                          ● No disponible
+                        </span>
                       )}
                     </td>
                     <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{libro.ubicacion || '—'}</td>
@@ -274,8 +278,7 @@ function Libros() {
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
                           <select
-                            className="form-select"
-                            style={{ padding: '4px 8px', fontSize: 12, width: 'auto' }}
+                            style={{ padding: '4px 8px', fontSize: 12, width: 'auto', borderRadius: 6 }}
                             value={libro.estado}
                             onChange={(e) => handleEstado(libro, e.target.value)}
                           >
@@ -289,6 +292,7 @@ function Libros() {
                             className="danger small"
                             onClick={() => handleEliminar(libro)}
                             title="Eliminar libro"
+                            style={{ padding: '5px 8px' }}
                           >
                             <Trash2 size={13} />
                           </button>
@@ -302,11 +306,11 @@ function Libros() {
           </table>
         </div>
 
-        {/* Pagination Wrapper */}
+        {/* Pagination Bar */}
         {totalPages > 1 && (
           <div className="pagination-wrapper">
             <span>
-              Mostrando página <strong>{page + 1}</strong> de <strong>{totalPages}</strong> ({totalElements} libros en total)
+              Mostrando página <strong>{page + 1}</strong> de <strong>{totalPages}</strong> ({totalElements} libros)
             </span>
             <div className="pagination-controls">
               <button
@@ -330,16 +334,16 @@ function Libros() {
         )}
       </div>
 
-      {/* Modal for Creating Book */}
+      {/* Modal: New Book */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div className="sidebar-brand-icon" style={{ width: 32, height: 32 }}>
-                  <BookOpen size={16} />
+                <div className="stat-icon-wrapper emerald" style={{ width: 34, height: 34 }}>
+                  <BookMarked size={18} />
                 </div>
-                <h3>Registrar Nuevo Libro</h3>
+                <h3>Registrar Nuevo Libro en Catálogo</h3>
               </div>
               <button className="modal-close-btn" onClick={() => setShowModal(false)}>
                 <X size={18} />
@@ -354,7 +358,7 @@ function Libros() {
                     name="titulo"
                     value={form.titulo}
                     onChange={handleChange}
-                    placeholder="Ej: Cien Años de Soledad"
+                    placeholder="Ej. Cien Años de Soledad"
                     required
                   />
                 </label>
@@ -365,18 +369,18 @@ function Libros() {
                     name="autor"
                     value={form.autor}
                     onChange={handleChange}
-                    placeholder="Ej: Gabriel García Márquez"
+                    placeholder="Ej. Gabriel García Márquez"
                     required
                   />
                 </label>
 
                 <label>
-                  <span>Género Literario / Categoría *</span>
+                  <span>Género / Categoría *</span>
                   <input
                     name="genero"
                     value={form.genero}
                     onChange={handleChange}
-                    placeholder="Ej: Novela, Ciencia, Tecnología"
+                    placeholder="Ej. Realismo Mágico, Programación"
                     required
                   />
                 </label>
@@ -387,13 +391,13 @@ function Libros() {
                     name="codigoUnico"
                     value={form.codigoUnico}
                     onChange={handleChange}
-                    placeholder="Ej: LIB-2026-001"
+                    placeholder="Ej. LIB-2026-001"
                     required
                   />
                 </label>
 
                 <label>
-                  <span>Estado Inicial</span>
+                  <span>Estado Inicial *</span>
                   <select name="estado" value={form.estado} onChange={handleChange}>
                     {ESTADOS.map((s) => (
                       <option key={s} value={s}>
@@ -409,48 +413,49 @@ function Libros() {
                     name="ubicacion"
                     value={form.ubicacion}
                     onChange={handleChange}
-                    placeholder="Ej: Pasillo A - Estante 3"
+                    placeholder="Ej. Estante B, Fila 3"
                   />
                 </label>
 
                 <label>
-                  <span>Tiempo Máx. Préstamo (Días)</span>
+                  <span>Tiempo Máximo Préstamo (días)</span>
                   <input
                     type="number"
                     name="tiempoMaxPrestamo"
                     value={form.tiempoMaxPrestamo}
                     onChange={handleChange}
-                    placeholder="Ej: 7"
+                    placeholder="Ej. 15"
+                    min="1"
                   />
                 </label>
 
                 <label>
-                  <span>Proveedor</span>
+                  <span>Proveedor / Donante</span>
                   <input
                     name="proveedor"
                     value={form.proveedor}
                     onChange={handleChange}
-                    placeholder="Editorial o Donante"
+                    placeholder="Ej. Editorial Planeta"
                   />
                 </label>
 
                 <label>
-                  <span>Responsable</span>
+                  <span>Responsable / Bibliotecario</span>
                   <input
                     name="responsable"
                     value={form.responsable}
                     onChange={handleChange}
-                    placeholder="Nombre del encargado"
+                    placeholder="Ej. Área de Biblioteca SENA"
                   />
                 </label>
 
                 <label style={{ gridColumn: '1 / -1' }}>
-                  <span>Descripción o Reseña</span>
+                  <span>Descripción / Reseña</span>
                   <textarea
                     name="descripcion"
                     value={form.descripcion}
                     onChange={handleChange}
-                    placeholder="Breve descripción del estado o contenido del libro..."
+                    placeholder="Sinopsis breve, edición o notas especiales del ejemplar..."
                   />
                 </label>
 

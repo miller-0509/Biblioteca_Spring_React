@@ -9,15 +9,11 @@ import {
 } from '../api/reportes.js'
 import { useAuth } from '../auth/AuthContext.jsx'
 import {
-  BarChart3,
   FileSpreadsheet,
   FileText,
-  Download,
   Laptop,
   BookOpen,
   Users,
-  Search,
-  CheckCircle2,
   AlertCircle,
   X,
   RefreshCw,
@@ -110,7 +106,7 @@ function Reportes() {
       )}
 
       {/* Segmented View Navigation */}
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 18 }}>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
         {VISTAS.filter(visible).map((v) => {
           const Icon = v.icon
           const isActive = vista === v.id
@@ -156,202 +152,108 @@ function Reportes() {
 
             {vista === 'prestamos' && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-muted)' }}>Tipo recurso:</span>
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-muted)' }}>Tipo de recurso:</span>
                 <select
-                  style={{ width: 140, padding: '6px 10px' }}
+                  style={{ width: 150, padding: '6px 10px' }}
                   value={filtros.tipoRecurso}
                   onChange={(e) => setFiltros({ ...filtros, tipoRecurso: e.target.value })}
                 >
                   <option value="">Todos</option>
-                  <option value="equipos">Equipos</option>
-                  <option value="libros">Libros</option>
+                  <option value="libro">Solo Libros</option>
+                  <option value="equipo">Solo Equipos</option>
                 </select>
               </div>
             )}
 
-            <button className="secondary small" onClick={cargar} title="Actualizar datos">
+            <button className="secondary small" onClick={cargar} title="Actualizar">
               <RefreshCw size={14} className={cargando ? 'animate-spin' : ''} />
+              <span>Filtrar</span>
             </button>
           </div>
 
-          {/* Export Buttons */}
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Download size={14} /> Exportar:
-            </span>
-
-            {vista === 'inventario' && VE_EQUIPOS(user?.rol) && (
+          {/* Export Action Buttons */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {vista === 'inventario' && (
               <>
-                <button
-                  className="success small"
-                  disabled={descargando === 'inventario_equipos_excel'}
-                  onClick={() => exportar('inventario_equipos', 'excel')}
-                  title="Exportar a Excel"
-                >
-                  <FileSpreadsheet size={13} />
-                  <span>Equipos XLSX</span>
-                </button>
-                <button
-                  className="small"
-                  style={{ background: '#e11d48' }}
-                  disabled={descargando === 'inventario_equipos_pdf'}
-                  onClick={() => exportar('inventario_equipos', 'pdf')}
-                  title="Exportar a PDF"
-                >
-                  <FileText size={13} />
-                  <span>Equipos PDF</span>
-                </button>
+                {VE_LIBROS(user?.rol) && (
+                  <button
+                    className="secondary small"
+                    onClick={() => exportar('inventario-libros')}
+                    disabled={descargando === 'inventario-libros_excel'}
+                    style={{ background: '#ecfdf5', color: '#065f46', borderColor: '#a7f3d0' }}
+                  >
+                    <FileSpreadsheet size={14} />
+                    <span>Libros (.xlsx)</span>
+                  </button>
+                )}
+                {VE_EQUIPOS(user?.rol) && (
+                  <button
+                    className="secondary small"
+                    onClick={() => exportar('inventario-equipos')}
+                    disabled={descargando === 'inventario-equipos_excel'}
+                    style={{ background: '#eef2ff', color: '#3730a3', borderColor: '#c7d2fe' }}
+                  >
+                    <FileSpreadsheet size={14} />
+                    <span>Equipos (.xlsx)</span>
+                  </button>
+                )}
               </>
             )}
 
-            {vista === 'inventario' && VE_LIBROS(user?.rol) && (
+            {vista === 'prestamos' && (
               <>
                 <button
-                  className="success small"
-                  disabled={descargando === 'inventario_libros_excel'}
-                  onClick={() => exportar('inventario_libros', 'excel')}
-                  title="Exportar a Excel"
+                  className="secondary small"
+                  onClick={() => exportar('prestamos-general')}
+                  disabled={descargando === 'prestamos-general_excel'}
+                  style={{ background: '#ecfdf5', color: '#065f46', borderColor: '#a7f3d0' }}
                 >
-                  <FileSpreadsheet size={13} />
-                  <span>Libros XLSX</span>
+                  <FileSpreadsheet size={14} />
+                  <span>Excel (.xlsx)</span>
                 </button>
                 <button
-                  className="small"
-                  style={{ background: '#e11d48' }}
-                  disabled={descargando === 'inventario_libros_pdf'}
-                  onClick={() => exportar('inventario_libros', 'pdf')}
-                  title="Exportar a PDF"
+                  className="secondary small"
+                  onClick={() => exportar('prestamos-general', 'pdf')}
+                  disabled={descargando === 'prestamos-general_pdf'}
+                  style={{ background: '#fef2f2', color: '#991b1b', borderColor: '#fecaca' }}
                 >
-                  <FileText size={13} />
-                  <span>Libros PDF</span>
-                </button>
-              </>
-            )}
-
-            {vista === 'prestamos' && VE_EQUIPOS(user?.rol) && (
-              <>
-                <button
-                  className="success small"
-                  disabled={descargando === 'prestamos_equipos_excel'}
-                  onClick={() => exportar('prestamos_equipos', 'excel')}
-                  title="Exportar a Excel"
-                >
-                  <FileSpreadsheet size={13} />
-                  <span>Préstamos Equipos XLSX</span>
-                </button>
-                <button
-                  className="small"
-                  style={{ background: '#e11d48' }}
-                  disabled={descargando === 'prestamos_equipos_pdf'}
-                  onClick={() => exportar('prestamos_equipos', 'pdf')}
-                  title="Exportar a PDF"
-                >
-                  <FileText size={13} />
-                  <span>Préstamos Equipos PDF</span>
-                </button>
-              </>
-            )}
-
-            {vista === 'prestamos' && VE_LIBROS(user?.rol) && (
-              <>
-                <button
-                  className="success small"
-                  disabled={descargando === 'prestamos_libros_excel'}
-                  onClick={() => exportar('prestamos_libros', 'excel')}
-                  title="Exportar a Excel"
-                >
-                  <FileSpreadsheet size={13} />
-                  <span>Préstamos Libros XLSX</span>
-                </button>
-                <button
-                  className="small"
-                  style={{ background: '#e11d48' }}
-                  disabled={descargando === 'prestamos_libros_pdf'}
-                  onClick={() => exportar('prestamos_libros', 'pdf')}
-                  title="Exportar a PDF"
-                >
-                  <FileText size={13} />
-                  <span>Préstamos Libros PDF</span>
+                  <FileText size={14} />
+                  <span>PDF (.pdf)</span>
                 </button>
               </>
             )}
 
             {vista === 'mis-prestamos' && (
-              <>
-                <button
-                  className="success small"
-                  disabled={descargando === 'mis_prestamos_excel'}
-                  onClick={() => exportar('mis_prestamos', 'excel')}
-                  title="Exportar a Excel"
-                >
-                  <FileSpreadsheet size={13} />
-                  <span>Mis Préstamos XLSX</span>
-                </button>
-                <button
-                  className="small"
-                  style={{ background: '#e11d48' }}
-                  disabled={descargando === 'mis_prestamos_pdf'}
-                  onClick={() => exportar('mis_prestamos', 'pdf')}
-                  title="Exportar a PDF"
-                >
-                  <FileText size={13} />
-                  <span>Mis Préstamos PDF</span>
-                </button>
-              </>
+              <button
+                className="secondary small"
+                onClick={() => exportar('mis-prestamos')}
+                disabled={descargando === 'mis-prestamos_excel'}
+                style={{ background: '#ecfdf5', color: '#065f46', borderColor: '#a7f3d0' }}
+              >
+                <FileSpreadsheet size={14} />
+                <span>Mis Préstamos (.xlsx)</span>
+              </button>
             )}
           </div>
         </div>
       )}
 
-      {/* Reports Table Data */}
-      {vista === 'inventario' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          {VE_EQUIPOS(user?.rol) && (
-            <div className="table-container">
-              <div className="card-header" style={{ padding: '16px 20px', margin: 0, background: '#f8fafc' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Laptop size={18} color="var(--primary)" />
-                  <h3>Inventario de Equipos ({equipos.length})</h3>
-                </div>
-              </div>
-              <div className="table-responsive">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Nombre</th>
-                      <th>Tipo</th>
-                      <th>N° Serie</th>
-                      <th>Estado</th>
-                      <th>Ubicación</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {equipos.length === 0 ? (
-                      <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Sin equipos</td></tr>
-                    ) : (
-                      equipos.map((e) => (
-                        <tr key={e.id}>
-                          <td style={{ fontWeight: 600, color: 'var(--text-muted)' }}>#{e.id}</td>
-                          <td style={{ fontWeight: 700 }}>{e.nombre}</td>
-                          <td><span style={{ fontSize: 12, background: 'var(--bg-subtle)', padding: '2px 8px', borderRadius: 4 }}>{e.tipoEquipo}</span></td>
-                          <td><code>{e.numeroSerie}</code></td>
-                          <td><span className={`badge ${e.estado}`}>{e.estado}</span></td>
-                          <td>{e.ubicacion || '—'}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+      {/* Loading state */}
+      {cargando && (
+        <div className="card" style={{ textAlign: 'center', padding: '40px 16px' }}>
+          <RefreshCw size={26} className="animate-spin" style={{ margin: '0 auto 10px', color: 'var(--primary)' }} />
+          <p style={{ color: 'var(--text-muted)', fontSize: 13.5, fontWeight: 600 }}>Generando reporte y consolidando datos...</p>
+        </div>
+      )}
 
+      {/* DATA VIEW 1: VISTA INVENTARIO */}
+      {!cargando && vista === 'inventario' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           {VE_LIBROS(user?.rol) && (
             <div className="table-container">
-              <div className="card-header" style={{ padding: '16px 20px', margin: 0, background: '#f8fafc' }}>
+              <div className="card-header" style={{ padding: '16px 20px', borderBottom: '1px solid var(--card-border)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <BookOpen size={18} color="var(--emerald)" />
+                  <BookOpen size={18} color="var(--primary)" />
                   <h3>Inventario de Libros ({libros.length})</h3>
                 </div>
               </div>
@@ -359,22 +261,20 @@ function Reportes() {
                 <table>
                   <thead>
                     <tr>
-                      <th>ID</th>
                       <th>Título</th>
                       <th>Autor</th>
-                      <th>Código Único</th>
+                      <th>Código</th>
                       <th>Estado</th>
                       <th>Ubicación</th>
                     </tr>
                   </thead>
                   <tbody>
                     {libros.length === 0 ? (
-                      <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Sin libros</td></tr>
+                      <tr><td colSpan={5} style={{ textAlign: 'center', padding: 24, color: 'var(--text-muted)' }}>No hay libros en este reporte</td></tr>
                     ) : (
                       libros.map((l) => (
                         <tr key={l.id}>
-                          <td style={{ fontWeight: 600, color: 'var(--text-muted)' }}>#{l.id}</td>
-                          <td style={{ fontWeight: 700 }}>{l.titulo}</td>
+                          <td style={{ fontWeight: 700, color: 'var(--text-main)' }}>{l.titulo}</td>
                           <td>{l.autor}</td>
                           <td><code>{l.codigoUnico}</code></td>
                           <td><span className={`badge ${l.estado}`}>{l.estado}</span></td>
@@ -387,80 +287,39 @@ function Reportes() {
               </div>
             </div>
           )}
-        </div>
-      )}
 
-      {vista === 'prestamos' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           {VE_EQUIPOS(user?.rol) && (
             <div className="table-container">
-              <div className="card-header" style={{ padding: '16px 20px', margin: 0, background: '#f8fafc' }}>
+              <div className="card-header" style={{ padding: '16px 20px', borderBottom: '1px solid var(--card-border)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Laptop size={18} color="var(--primary)" />
-                  <h3>Reporte de Préstamos de Equipos ({equipos.length})</h3>
+                  <h3>Inventario de Equipos ({equipos.length})</h3>
                 </div>
               </div>
               <div className="table-responsive">
                 <table>
                   <thead>
                     <tr>
-                      <th>ID</th>
-                      <th>Usuario</th>
-                      <th>Equipo</th>
+                      <th>Nombre</th>
+                      <th>Tipo</th>
+                      <th>Marca / Modelo</th>
+                      <th>Serie</th>
                       <th>Estado</th>
-                      <th>Fecha Solicitud</th>
+                      <th>Ubicación</th>
                     </tr>
                   </thead>
                   <tbody>
                     {equipos.length === 0 ? (
-                      <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Sin registros</td></tr>
+                      <tr><td colSpan={6} style={{ textAlign: 'center', padding: 24, color: 'var(--text-muted)' }}>No hay equipos en este reporte</td></tr>
                     ) : (
-                      equipos.map((p) => (
-                        <tr key={p.id}>
-                          <td style={{ fontWeight: 600, color: 'var(--text-muted)' }}>#{p.id}</td>
-                          <td style={{ fontWeight: 700 }}>{p.usuarioNombre}</td>
-                          <td>{p.equipoNombre}</td>
-                          <td><span className={`badge ${p.estado}`}>{p.estado}</span></td>
-                          <td>{p.fechaSolicitud ? new Date(p.fechaSolicitud).toLocaleDateString() : '—'}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {VE_LIBROS(user?.rol) && (
-            <div className="table-container">
-              <div className="card-header" style={{ padding: '16px 20px', margin: 0, background: '#f8fafc' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <BookOpen size={18} color="var(--emerald)" />
-                  <h3>Reporte de Préstamos de Libros ({libros.length})</h3>
-                </div>
-              </div>
-              <div className="table-responsive">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Usuario</th>
-                      <th>Libro</th>
-                      <th>Estado</th>
-                      <th>Fecha Solicitud</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {libros.length === 0 ? (
-                      <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Sin registros</td></tr>
-                    ) : (
-                      libros.map((p) => (
-                        <tr key={p.id}>
-                          <td style={{ fontWeight: 600, color: 'var(--text-muted)' }}>#{p.id}</td>
-                          <td style={{ fontWeight: 700 }}>{p.usuarioNombre}</td>
-                          <td>{p.libroTitulo}</td>
-                          <td><span className={`badge ${p.estado}`}>{p.estado}</span></td>
-                          <td>{p.fechaSolicitud ? new Date(p.fechaSolicitud).toLocaleDateString() : '—'}</td>
+                      equipos.map((e) => (
+                        <tr key={e.id}>
+                          <td style={{ fontWeight: 700, color: 'var(--text-main)' }}>{e.nombre}</td>
+                          <td>{e.tipoEquipo}</td>
+                          <td>{e.marca} {e.modelo}</td>
+                          <td><code>{e.numeroSerie || '—'}</code></td>
+                          <td><span className={`badge ${e.estado}`}>{e.estado}</span></td>
+                          <td>{e.ubicacion || '—'}</td>
                         </tr>
                       ))
                     )}
@@ -472,36 +331,79 @@ function Reportes() {
         </div>
       )}
 
-      {vista === 'mis-prestamos' && (
+      {/* DATA VIEW 2: VISTA HISTORIAL PRÉSTAMOS */}
+      {!cargando && (vista === 'prestamos' || vista === 'mis-prestamos') && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           <div className="table-container">
-            <div className="card-header" style={{ padding: '16px 20px', margin: 0, background: '#f8fafc' }}>
-              <h3>Mis Préstamos Históricos</h3>
+            <div className="card-header" style={{ padding: '16px 20px', borderBottom: '1px solid var(--card-border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <BookOpen size={18} color="var(--primary)" />
+                <h3>Préstamos de Libros ({libros.length})</h3>
+              </div>
             </div>
             <div className="table-responsive">
               <table>
                 <thead>
                   <tr>
                     <th>ID</th>
-                    <th>Recurso</th>
-                    <th>Tipo</th>
+                    <th>Libro</th>
+                    {vista === 'prestamos' && <th>Usuario</th>}
+                    <th>Fecha Préstamo</th>
+                    <th>Devolución Esperada</th>
                     <th>Estado</th>
-                    <th>Fecha Solicitud</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {[...equipos.map((e) => ({ ...e, tipoItem: 'Equipo', nombre: e.equipoNombre })),
-                    ...libros.map((l) => ({ ...l, tipoItem: 'Libro', nombre: l.libroTitulo }))].length === 0 ? (
-                    <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No tienes préstamos registrados</td></tr>
+                  {libros.length === 0 ? (
+                    <tr><td colSpan={6} style={{ textAlign: 'center', padding: 24, color: 'var(--text-muted)' }}>No hay registros de préstamos de libros</td></tr>
                   ) : (
-                    [...equipos.map((e) => ({ ...e, tipoItem: 'Equipo', nombre: e.equipoNombre })),
-                     ...libros.map((l) => ({ ...l, tipoItem: 'Libro', nombre: l.libroTitulo }))].map((item, idx) => (
-                      <tr key={idx}>
-                        <td style={{ fontWeight: 600, color: 'var(--text-muted)' }}>#{item.id}</td>
-                        <td style={{ fontWeight: 700 }}>{item.nombre}</td>
-                        <td><span style={{ fontSize: 12, background: 'var(--bg-subtle)', padding: '2px 8px', borderRadius: 4 }}>{item.tipoItem}</span></td>
-                        <td><span className={`badge ${item.estado}`}>{item.estado}</span></td>
-                        <td>{item.fechaSolicitud ? new Date(item.fechaSolicitud).toLocaleDateString() : '—'}</td>
+                    libros.map((p) => (
+                      <tr key={p.id}>
+                        <td style={{ fontWeight: 700, color: 'var(--text-muted)' }}>#{p.id}</td>
+                        <td style={{ fontWeight: 700, color: 'var(--text-main)' }}>{p.libroTitulo || `Libro #${p.libroId}`}</td>
+                        {vista === 'prestamos' && <td>{p.usuarioNombre}</td>}
+                        <td>{p.fechaPrestamo ? new Date(p.fechaPrestamo).toLocaleDateString() : '—'}</td>
+                        <td>{p.fechaDevolucionEsperada ? new Date(p.fechaDevolucionEsperada).toLocaleDateString() : '—'}</td>
+                        <td><span className={`badge ${p.estado}`}>{p.estado}</span></td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="table-container">
+            <div className="card-header" style={{ padding: '16px 20px', borderBottom: '1px solid var(--card-border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Laptop size={18} color="var(--primary)" />
+                <h3>Préstamos de Equipos ({equipos.length})</h3>
+              </div>
+            </div>
+            <div className="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Equipo</th>
+                    {vista === 'prestamos' && <th>Usuario</th>}
+                    <th>Fecha Préstamo</th>
+                    <th>Devolución Esperada</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {equipos.length === 0 ? (
+                    <tr><td colSpan={6} style={{ textAlign: 'center', padding: 24, color: 'var(--text-muted)' }}>No hay registros de préstamos de equipos</td></tr>
+                  ) : (
+                    equipos.map((p) => (
+                      <tr key={p.id}>
+                        <td style={{ fontWeight: 700, color: 'var(--text-muted)' }}>#{p.id}</td>
+                        <td style={{ fontWeight: 700, color: 'var(--text-main)' }}>{p.equipoNombre || p.recursoNombre || `Equipo #${p.equipoId}`}</td>
+                        {vista === 'prestamos' && <td>{p.usuarioNombre}</td>}
+                        <td>{p.fechaPrestamo ? new Date(p.fechaPrestamo).toLocaleDateString() : '—'}</td>
+                        <td>{p.fechaDevolucionEsperada ? new Date(p.fechaDevolucionEsperada).toLocaleDateString() : '—'}</td>
+                        <td><span className={`badge ${p.estado}`}>{p.estado}</span></td>
                       </tr>
                     ))
                   )}
@@ -512,12 +414,13 @@ function Reportes() {
         </div>
       )}
 
-      {vista === 'usuarios-activos' && (
+      {/* DATA VIEW 3: VISTA USUARIOS ACTIVOS */}
+      {!cargando && vista === 'usuarios-activos' && (
         <div className="table-container">
-          <div className="card-header" style={{ padding: '16px 20px', margin: 0, background: '#f8fafc' }}>
+          <div className="card-header" style={{ padding: '16px 20px', borderBottom: '1px solid var(--card-border)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Users size={18} color="var(--primary)" />
-              <h3>Usuarios Activos con Préstamos ({usuariosAct.length})</h3>
+              <h3>Usuarios Activos en el Sistema ({usuariosAct.length})</h3>
             </div>
           </div>
           <div className="table-responsive">
@@ -526,22 +429,22 @@ function Reportes() {
                 <tr>
                   <th>ID</th>
                   <th>Nombre Completo</th>
+                  <th>Correo Institucional</th>
                   <th>Rol</th>
-                  <th>Préstamos Activos</th>
+                  <th>Estado</th>
                 </tr>
               </thead>
               <tbody>
                 {usuariosAct.length === 0 ? (
-                  <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Sin usuarios activos</td></tr>
+                  <tr><td colSpan={5} style={{ textAlign: 'center', padding: 24, color: 'var(--text-muted)' }}>No hay usuarios activos registrados</td></tr>
                 ) : (
                   usuariosAct.map((u) => (
                     <tr key={u.id}>
-                      <td style={{ fontWeight: 600, color: 'var(--text-muted)' }}>#{u.id}</td>
-                      <td style={{ fontWeight: 700 }}>{u.nombre}</td>
-                      <td><span className="badge">{u.rol}</span></td>
-                      <td>
-                        <strong style={{ color: 'var(--primary)', fontSize: 14 }}>{u.prestamosActivos}</strong>
-                      </td>
+                      <td style={{ fontWeight: 700, color: 'var(--text-muted)' }}>#{u.id}</td>
+                      <td style={{ fontWeight: 700, color: 'var(--text-main)' }}>{u.nombres} {u.apellidos}</td>
+                      <td>{u.correo}</td>
+                      <td><span className="badge" style={{ background: 'var(--bg-subtle)', color: 'var(--primary)' }}>{u.rol}</span></td>
+                      <td><span style={{ color: 'var(--emerald-800)', fontWeight: 600 }}>● Activo</span></td>
                     </tr>
                   ))
                 )}

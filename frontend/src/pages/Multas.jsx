@@ -4,14 +4,14 @@ import { useAuth } from '../auth/AuthContext.jsx'
 import {
   AlertTriangle,
   Search,
-  Filter,
   CheckCircle2,
   AlertCircle,
   X,
   RefreshCw,
   ShieldAlert,
   Clock,
-  Check
+  Check,
+  ShieldCheck
 } from 'lucide-react'
 
 const FILTROS = ['', 'acumulando', 'activa', 'cumplida', 'condonada']
@@ -87,7 +87,7 @@ function Multas() {
       {message.text && (
         <div className={`alert ${message.type}`}>
           {message.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
-          <span style={{ flex: 1 }}>{message.text}</span>
+          <span style={{ flex: 1, fontWeight: 600 }}>{message.text}</span>
           <button
             onClick={() => setMessage({ type: '', text: '' })}
             style={{ background: 'transparent', border: 'none', color: 'inherit', padding: 0, boxShadow: 'none' }}
@@ -98,7 +98,7 @@ function Multas() {
       )}
 
       {/* KPI Stats */}
-      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', marginBottom: 18 }}>
+      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', marginBottom: 20 }}>
         <div className="stat-card">
           <div className="stat-icon-wrapper rose">
             <ShieldAlert size={22} />
@@ -146,27 +146,27 @@ function Multas() {
           <Search size={16} className="search-icon" />
           <input
             type="text"
-            placeholder="Buscar por usuario o recurso..."
+            placeholder="Buscar por usuario, libro o equipo..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
         </div>
 
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="tab-pills">
           {FILTROS.map((f) => (
             <button
               key={f}
-              className={`small ${estado === f ? '' : 'secondary'}`}
+              className={`tab-pill-btn ${estado === f ? 'active' : ''}`}
               onClick={() => setEstado(f)}
             >
               {f ? f.charAt(0).toUpperCase() + f.slice(1) : 'Todas'}
             </button>
           ))}
-
-          <button className="secondary" onClick={cargar} title="Recargar">
-            <RefreshCw size={15} className={cargando ? 'animate-spin' : ''} />
-          </button>
         </div>
+
+        <button className="secondary" onClick={cargar} title="Recargar">
+          <RefreshCw size={15} className={cargando ? 'animate-spin' : ''} />
+        </button>
       </div>
 
       {/* Table of Fines */}
@@ -175,11 +175,11 @@ function Multas() {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
+                <th style={{ width: 70 }}>ID</th>
                 <th>Recurso Sancionado</th>
                 {puedeCondonar && <th>Usuario Sancionado</th>}
                 <th>Días de Retraso</th>
-                <th>Días de Suspensión</th>
+                <th>Días Suspensión</th>
                 <th>Estado</th>
                 <th>Fin de Suspensión</th>
                 {!puedeCondonar && <th>Observación / Motivo</th>}
@@ -190,9 +190,9 @@ function Multas() {
               {cargando && multasFiltradas.length === 0 ? (
                 <tr>
                   <td colSpan={puedeCondonar ? 8 : 7}>
-                    <div style={{ padding: '36px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                      <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 10px', color: 'var(--primary)' }} />
-                      <div style={{ fontSize: 13, fontWeight: 500 }}>Cargando sanciones y multas...</div>
+                    <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                      <RefreshCw size={26} className="animate-spin" style={{ margin: '0 auto 10px', color: 'var(--primary)' }} />
+                      <div style={{ fontSize: 13.5, fontWeight: 600 }}>Cargando sanciones y multas...</div>
                     </div>
                   </td>
                 </tr>
@@ -201,7 +201,7 @@ function Multas() {
                   <td colSpan={puedeCondonar ? 8 : 7}>
                     <div className="empty-state">
                       <div className="empty-state-icon">
-                        <CheckCircle2 size={24} />
+                        <CheckCircle2 size={24} color="var(--emerald-600)" />
                       </div>
                       <h4>No hay sanciones registradas</h4>
                       <p>
@@ -215,23 +215,27 @@ function Multas() {
               ) : (
                 multasFiltradas.map((m) => (
                   <tr key={m.id}>
-                    <td style={{ fontWeight: 600, color: 'var(--text-muted)' }}>#{m.id}</td>
+                    <td style={{ fontWeight: 700, color: 'var(--text-muted)' }}>#{m.id}</td>
                     <td>
-                      <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>{m.recursoNombre || '—'}</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{m.tipoRecurso || 'Biblioteca'}</div>
+                      <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: 14 }}>
+                        {m.recursoNombre || 'Recurso'}
+                      </div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                        {m.tipoRecurso || 'Biblioteca SENA'}
+                      </div>
                     </td>
                     {puedeCondonar && (
                       <td>
-                        <div style={{ fontWeight: 600 }}>{m.usuarioNombre}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{m.usuarioNombre}</div>
                       </td>
                     )}
                     <td>
-                      <span style={{ color: 'var(--rose)', fontWeight: 700 }}>
+                      <span style={{ color: 'var(--rose-800)', background: 'var(--rose-50)', border: '1px solid var(--rose-200)', padding: '2px 8px', borderRadius: 6, fontWeight: 700, fontSize: 12 }}>
                         {m.diasRetraso} {m.diasRetraso === 1 ? 'día' : 'días'}
                       </span>
                     </td>
                     <td>
-                      <span style={{ fontWeight: 700 }}>
+                      <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>
                         {m.diasSuspension} {m.diasSuspension === 1 ? 'día' : 'días'}
                       </span>
                     </td>
@@ -240,7 +244,7 @@ function Multas() {
                     </td>
                     <td style={{ fontSize: 13 }}>
                       {m.fechaFinSuspension ? (
-                        <span style={{ fontWeight: 600 }}>
+                        <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>
                           {new Date(m.fechaFinSuspension).toLocaleDateString()}
                         </span>
                       ) : (
@@ -258,7 +262,9 @@ function Multas() {
                           <button
                             className="small secondary"
                             onClick={() => setCondonando(m)}
+                            title="Condonar o Exonerar Sanción"
                           >
+                            <ShieldCheck size={13} color="var(--emerald-600)" />
                             <span>Condonar</span>
                           </button>
                         )}
@@ -278,7 +284,7 @@ function Multas() {
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
             <div className="modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <CheckCircle2 size={18} color="var(--emerald)" />
+                <CheckCircle2 size={18} color="var(--emerald-600)" />
                 <h3>Condonar Sanción — #{condonando.id}</h3>
               </div>
               <button className="modal-close-btn" onClick={() => setCondonando(null)}>
@@ -294,7 +300,7 @@ function Multas() {
                   <span>Observación o Justificación de la Condonación *</span>
                   <textarea
                     name="observacion"
-                    placeholder="Motivo de la exoneración o condonación de la falta..."
+                    placeholder="Motivo formal de la exoneración o condonación de la sanción..."
                     required
                   />
                 </label>

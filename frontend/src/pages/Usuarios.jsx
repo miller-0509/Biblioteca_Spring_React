@@ -9,19 +9,17 @@ import {
   X,
   RefreshCw,
   Mail,
-  Lock,
-  ShieldCheck,
   UserCheck
 } from 'lucide-react'
 
 const emptyForm = { nombres: '', apellidos: '', correo: '', password: '', rol: '' }
 
-const ROL_COLORS = {
-  administrador: '#4f46e5',
-  bibliotecario: '#06b6d4',
-  almacenista: '#8b5cf6',
-  aprendiz: '#10b981',
-  instructor: '#f59e0b',
+const ROL_CONFIG = {
+  administrador: { bg: '#eef2ff', text: '#3730a3', border: '#c7d2fe', avatarBg: '#4f46e5' },
+  bibliotecario: { bg: '#ecfeff', text: '#155e75', border: '#a5f3fc', avatarBg: '#06b6d4' },
+  almacenista: { bg: '#faf5ff', text: '#6b21a8', border: '#e9d5ff', avatarBg: '#8b5cf6' },
+  aprendiz: { bg: '#ecfdf5', text: '#065f46', border: '#a7f3d0', avatarBg: '#10b981' },
+  instructor: { bg: '#fffbeb', text: '#92400e', border: '#fde68a', avatarBg: '#f59e0b' },
 }
 
 function Usuarios() {
@@ -85,7 +83,7 @@ function Usuarios() {
       {message.text && (
         <div className={`alert ${message.type}`}>
           {message.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
-          <span style={{ flex: 1 }}>{message.text}</span>
+          <span style={{ flex: 1, fontWeight: 600 }}>{message.text}</span>
           <button
             onClick={() => setMessage({ type: '', text: '' })}
             style={{ background: 'transparent', border: 'none', color: 'inherit', padding: 0, boxShadow: 'none' }}
@@ -101,17 +99,17 @@ function Usuarios() {
           <Search size={16} className="search-icon" />
           <input
             type="text"
-            placeholder="Buscar por nombre, correo o ID..."
+            placeholder="Buscar por nombre, correo institucional o ID..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
         </div>
 
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           <select
             value={filtroRol}
             onChange={(e) => setFiltroRol(e.target.value)}
-            style={{ minWidth: 150 }}
+            style={{ minWidth: 160 }}
           >
             <option value="">Todos los roles</option>
             <option value="aprendiz">Aprendiz</option>
@@ -138,20 +136,20 @@ function Usuarios() {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
+                <th style={{ width: 70 }}>ID</th>
                 <th>Usuario</th>
-                <th>Correo Electrónico</th>
+                <th>Correo Institucional</th>
                 <th>Rol Asignado</th>
-                <th>Estado</th>
+                <th>Estado de Cuenta</th>
               </tr>
             </thead>
             <tbody>
               {cargando && usuariosFiltrados.length === 0 ? (
                 <tr>
                   <td colSpan={5}>
-                    <div style={{ padding: '36px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                      <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 10px', color: 'var(--primary)' }} />
-                      <div style={{ fontSize: 13, fontWeight: 500 }}>Cargando usuarios...</div>
+                    <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                      <RefreshCw size={26} className="animate-spin" style={{ margin: '0 auto 10px', color: 'var(--primary)' }} />
+                      <div style={{ fontSize: 13.5, fontWeight: 600 }}>Cargando usuarios...</div>
                     </div>
                   </td>
                 </tr>
@@ -163,42 +161,43 @@ function Usuarios() {
                         <Users size={24} />
                       </div>
                       <h4>No se encontraron usuarios</h4>
-                      <p>No hay registros que coincidan con la búsqueda o filtros.</p>
+                      <p>No hay registros que coincidan con la búsqueda o filtros seleccionados.</p>
                     </div>
                   </td>
                 </tr>
               ) : (
                 usuariosFiltrados.map((u) => {
                   const initials = ((u.nombres?.[0] || '') + (u.apellidos?.[0] || '')).toUpperCase() || 'U'
-                  const color = ROL_COLORS[u.rol] || '#6366f1'
+                  const cfg = ROL_CONFIG[u.rol] || { bg: '#f1f5f9', text: '#334155', border: '#e2e8f0', avatarBg: '#64748b' }
                   return (
                     <tr key={u.id}>
-                      <td style={{ fontWeight: 600, color: 'var(--text-muted)' }}>#{u.id}</td>
+                      <td style={{ fontWeight: 700, color: 'var(--text-muted)' }}>#{u.id}</td>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                           <div
                             style={{
-                              width: 34,
-                              height: 34,
+                              width: 36,
+                              height: 36,
                               borderRadius: '50%',
-                              background: color,
-                              color: '#fff',
+                              background: cfg.avatarBg,
+                              color: '#ffffff',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               fontWeight: 700,
-                              fontSize: 12,
-                              flexShrink: 0
+                              fontSize: 13,
+                              flexShrink: 0,
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                             }}
                           >
                             {initials}
                           </div>
                           <div>
-                            <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>
+                            <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: 14 }}>
                               {u.nombres} {u.apellidos}
                             </div>
                             <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
-                              Registrado en el sistema
+                              Registrado en plataforma
                             </div>
                           </div>
                         </div>
@@ -206,17 +205,25 @@ function Usuarios() {
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <Mail size={14} color="var(--text-muted)" />
-                          <span>{u.correo}</span>
+                          <span style={{ fontWeight: 500 }}>{u.correo}</span>
                         </div>
                       </td>
                       <td>
-                        <span className="badge" style={{ background: 'var(--bg-subtle)', color }}>
+                        <span
+                          className="badge"
+                          style={{
+                            background: cfg.bg,
+                            color: cfg.text,
+                            borderColor: cfg.border,
+                            fontWeight: 700
+                          }}
+                        >
                           {u.rol || 'Sin rol'}
                         </span>
                       </td>
                       <td>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12.5, color: 'var(--emerald-dark)', fontWeight: 600 }}>
-                          <UserCheck size={14} color="var(--emerald)" /> Activo
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12.5, color: 'var(--emerald-800)', background: 'var(--emerald-50)', border: '1px solid var(--emerald-200)', padding: '2px 8px', borderRadius: '999px', fontWeight: 700 }}>
+                          <UserCheck size={13} color="var(--emerald-600)" /> Activo
                         </span>
                       </td>
                     </tr>
@@ -234,8 +241,8 @@ function Usuarios() {
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div className="sidebar-brand-icon" style={{ width: 32, height: 32 }}>
-                  <Users size={16} />
+                <div className="stat-icon-wrapper indigo" style={{ width: 34, height: 34 }}>
+                  <Users size={18} />
                 </div>
                 <h3>Registrar Nuevo Usuario</h3>
               </div>
@@ -269,7 +276,7 @@ function Usuarios() {
                 </label>
 
                 <label style={{ gridColumn: '1 / -1' }}>
-                  <span>Correo Electrónico *</span>
+                  <span>Correo Institucional *</span>
                   <input
                     type="email"
                     name="correo"
